@@ -26,7 +26,11 @@
 // que se le pide a un buen hash. Lo que no se puede es saltarse el
 // navegador: por eso la sesion viaja por HTTPS y solo por HTTPS.
 
-const VUELTAS_CLIENTE = 300000; // el navegador tiene que usar estas mismas
+import {
+  VUELTAS_CLIENTE, nombreValido, estiradoValido, guardarSecreto,
+  coincide, igualSinChivarse, resumen, alAzar, codigoDeRescate,
+} from "./secretos.js";
+
 const MAX_PROGRESO = 64 * 1024;
 const DIAS_DE_SESION = 180;
 const FALLOS_PERMITIDOS = 8;
@@ -101,19 +105,6 @@ function responder(cuerpo, estado, origen, extra) {
 
 // --- Cuentas -------------------------------------------------------------
 
-// El nombre se deja corto y sin sorpresas a proposito. Un nombre con
-// espacios raros o con letras que se ven igual que otras es la via para
-// hacerse pasar por alguien.
-function nombreValido(usuario) {
-  return typeof usuario === "string" && /^[a-zA-Z0-9_-]{3,24}$/.test(usuario);
-}
-
-// Lo que llega del navegador ya es el resultado de PBKDF2, asi que tiene
-// una forma fija y comprobable. Si no la tiene, es que alguien esta
-// llamando a mano y saltandose el estirado.
-function estiradoValido(texto) {
-  return typeof texto === "string" && /^[a-f0-9]{64}$/.test(texto);
-}
 
 async function registrar(peticion, entorno) {
   const cuerpo = await leerJSON(peticion);
@@ -330,56 +321,6 @@ async function deLaSesion(peticion, entorno) {
   return { id: fila.id, usuario: fila.usuario };
 }
 
-// --- Contraseñas ---------------------------------------------------------
-
-// Al estirado que llega del navegador se le pone una sal de aqui y un hash
-// rapido. Lo caro ya lo pago el navegador; esto solo evita que quien se
-// lleve la base pueda usar lo que hay dentro tal cual.
-async function guardarSecreto(texto) {
-  const sal = alAzar(16);
-  return "s1$" + sal + "$" + (await resumen(sal + ":" + texto));
-}
-
-async function coincide(texto, guardado) {
-  const trozos = String(guardado).split("$");
-  if (trozos.length !== 3 || trozos[0] !== "s1") return false;
-  const esperado = await resumen(trozos[1] + ":" + texto);
-  return igualSinChivarse(esperado, trozos[2]);
-}
-
-// Comparar sin que el tiempo diga cuantas letras se acertaron.
-function igualSinChivarse(a, b) {
-  if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) return false;
-  let diferencia = 0;
-  for (let i = 0; i < a.length; i++) diferencia |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diferencia === 0;
-}
-
-async function resumen(texto) {
-  const bytes = new TextEncoder().encode(texto);
-  const digerido = await crypto.subtle.digest("SHA-256", bytes);
-  return [...new Uint8Array(digerido)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-function alAzar(bytes) {
-  const buffer = new Uint8Array(bytes);
-  crypto.getRandomValues(buffer);
-  return [...buffer].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-// Sin las letras que se confunden al copiarlas a mano: ni O ni 0, ni I ni 1.
-function codigoDeRescate() {
-  const letras = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const buffer = new Uint8Array(20);
-  crypto.getRandomValues(buffer);
-  let salida = "";
-  for (let i = 0; i < buffer.length; i++) {
-    if (i > 0 && i % 5 === 0) salida += "-";
-    salida += letras[buffer[i] % letras.length];
-  }
-  return salida;
-}
-
 // --- Intentos fallidos ---------------------------------------------------
 
 async function castigado(entorno, quien) {
@@ -413,10 +354,3 @@ async function leerJSON(peticion) {
   }
 }
 
-export { VUELTAS_CLIENTE };
-
-// Puertas traseras solo para las pruebas. No las usa el servidor.
-export const paraPruebas = {
-  guardarSecreto, coincide, codigoDeRescate, nombreValido,
-  estiradoValido, igualSinChivarse, resumen,
-};

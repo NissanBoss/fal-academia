@@ -10,7 +10,8 @@
 // por separado, y si el numero de vueltas o la sal se separan un dia, todo
 // seguira compilando y nadie podra entrar.
 
-import { paraPruebas, VUELTAS_CLIENTE } from "./worker.js";
+import * as paraPruebas from "./secretos.js";
+import { VUELTAS_CLIENTE } from "./secretos.js";
 import { readFileSync } from "node:fs";
 
 const { guardarSecreto, coincide, codigoDeRescate, nombreValido, estiradoValido, igualSinChivarse } = paraPruebas;

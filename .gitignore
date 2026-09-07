@@ -9,3 +9,4 @@ web/fal.wasm
 web/wasm_exec.js
 web/trabajador.js
 api/fal-linux
+api/wrangler.prueba.toml

@@ -10,7 +10,17 @@
 // o tres decimas de segundo, una sola vez al entrar, y a cambio el curso no
 // cuesta dinero al mes.
 
-const API = window.FAL_API || "https://api.fal-lang.org";
+// Contra qué servidor se habla. En una máquina de trabajo se apunta solo al
+// `wrangler dev` de al lado, para poder probar el registro sin tocar el de
+// verdad ni tener que acordarse de deshacer el cambio antes de publicar.
+// Se reutiliza el mismo nombre de máquina que tenga la página, no uno
+// fijo. Con la página en "localhost" y el servidor en "127.0.0.1" el
+// navegador los considera dos sitios distintos, la cookie de sesión no
+// viaja y todo contesta que no has entrado, que es exactamente el mismo
+// fallo que daría en producción si la API no colgara de fal-lang.org.
+const enCasa = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+const API = window.FAL_API ||
+  (enCasa ? location.protocol + "//" + location.hostname + ":8787" : "https://api.fal-lang.org");
 const VUELTAS = 300000;
 
 // La sal es el nombre del alumno con un prefijo de este sitio. Tiene que
