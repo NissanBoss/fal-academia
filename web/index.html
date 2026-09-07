@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aprende a programar con Fal</title>
+<meta name="description" content="Un curso de programación en español, de cero a objetos y clausuras. Treinta y dos lecciones con ejercicios que se corrigen solos, sin instalar nada.">
+<link rel="canonical" href="https://aprende.fal-lang.org/">
+<style>
+:root {
+  --papel: #fbfaf7; --caja: #ffffff; --tinta: #1a1a18; --suave: #5f5c55;
+  --borde: #e2ded4; --azul: #1c4f8b; --tierra: #9c4420; --verde: #216e3f;
+  --codigo-fondo: #f6f4ef;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --papel: #16171a; --caja: #1d1f23; --tinta: #e8e6e1; --suave: #a2a099;
+    --borde: #30323a; --azul: #79b0e4; --tierra: #e0865c; --verde: #6fca92;
+    --codigo-fondo: #1a1c20;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--papel); color: var(--tinta); font: 16px/1.6 var(--sans); }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.25; }
+a { color: var(--azul); }
+code, pre, textarea { font-family: var(--mono); }
+button { font: inherit; cursor: pointer; }
+
+nav { border-bottom: 1px solid var(--borde); background: var(--papel); position: sticky; top: 0; z-index: 20; }
+nav .fila { display: flex; align-items: center; gap: 16px; height: 56px; padding: 0 20px; }
+.marca { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--tinta); text-decoration: none; }
+.marca span { color: var(--tierra); }
+.migas { color: var(--suave); font-size: 15px; }
+nav .derecha { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 14.5px; }
+nav .derecha a { color: var(--suave); text-decoration: none; }
+@media (max-width: 700px) { .migas, nav .derecha a.opcional { display: none; } }
+
+.avance { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--suave); }
+.barra-avance { width: 84px; height: 5px; background: var(--borde); border-radius: 3px; overflow: hidden; }
+.barra-avance i { display: block; height: 100%; background: var(--verde); width: 0; transition: width .3s; }
+
+.btn { padding: 7px 14px; border-radius: 6px; border: 1px solid var(--azul); background: transparent; color: var(--azul); }
+.btn.lleno { background: var(--azul); color: var(--papel); border-color: var(--azul); }
+.btn.gris { border-color: var(--borde); color: var(--suave); }
+.btn:disabled { opacity: .5; cursor: default; }
+
+.disposicion { display: grid; grid-template-columns: 250px 1fr; min-height: calc(100vh - 56px); }
+@media (max-width: 900px) { .disposicion { grid-template-columns: 1fr; } aside { display: none; } aside.abierto { display: block; } }
+
+aside { border-right: 1px solid var(--borde); padding: 18px 0 40px; overflow-y: auto; max-height: calc(100vh - 56px); position: sticky; top: 56px; }
+aside h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--suave); font-family: var(--sans); margin: 18px 20px 6px; }
+aside ol { list-style: none; margin: 0; padding: 0; }
+aside li a {
+  display: flex; gap: 9px; align-items: baseline; padding: 5px 20px; font-size: 14.5px;
+  color: var(--tinta); text-decoration: none; border-left: 2px solid transparent;
+}
+aside li a:hover { background: var(--codigo-fondo); }
+aside li a.actual { border-left-color: var(--tierra); background: var(--codigo-fondo); font-weight: 600; }
+aside li a .marca-hecha { color: var(--verde); width: 12px; flex: none; }
+
+main { padding: 26px 28px 60px; max-width: 900px; }
+.leccion h1 { font-size: 27px; margin: 0 0 4px; }
+.donde { color: var(--suave); font-size: 14px; margin: 0 0 20px; }
+.cuerpo p { max-width: 40em; }
+.cuerpo pre {
+  background: var(--codigo-fondo); border: 1px solid var(--borde); border-radius: 8px;
+  padding: 13px 15px; overflow-x: auto; font-size: 14px; line-height: 1.5;
+}
+.cuerpo :not(pre) > code {
+  background: var(--codigo-fondo); border: 1px solid var(--borde);
+  border-radius: 4px; padding: 1px 5px; font-size: .87em;
+}
+.tarea {
+  background: var(--caja); border: 1px solid var(--borde); border-left: 3px solid var(--tierra);
+  border-radius: 0 8px 8px 0; padding: 14px 16px; margin: 22px 0 16px; max-width: 44em;
+}
+.tarea b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--tierra); margin-bottom: 4px; }
+.tarea :not(pre) > code { background: var(--codigo-fondo); border: 1px solid var(--borde); border-radius: 4px; padding: 1px 5px; font-size: .87em; }
+
+.taller { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 6px; }
+@media (max-width: 820px) { .taller { grid-template-columns: 1fr; } }
+.panel { border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; background: var(--caja); }
+.panel .cabeza { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--suave); padding: 7px 12px; border-bottom: 1px solid var(--borde); background: var(--codigo-fondo); }
+textarea {
+  width: 100%; border: 0; padding: 12px; background: transparent; color: var(--tinta);
+  font-size: 14px; line-height: 1.55; resize: vertical; outline: none; display: block;
+}
+#programa { min-height: 210px; }
+#entradas { min-height: 46px; }
+.salida { margin: 0; padding: 12px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; min-height: 210px; overflow: auto; }
+.salida .aviso { color: var(--suave); }
+.salida .malo { color: var(--tierra); }
+#lienzo svg { max-width: 100%; height: auto; display: block; margin: 8px auto; }
+
+.acciones { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+.veredicto { font-size: 14.5px; }
+.veredicto.bien { color: var(--verde); font-weight: 600; }
+.veredicto.mal { color: var(--tierra); }
+
+dialog {
+  border: 1px solid var(--borde); border-radius: 10px; background: var(--caja); color: var(--tinta);
+  padding: 0; max-width: 420px; width: calc(100% - 32px);
+}
+dialog::backdrop { background: rgba(0,0,0,.45); }
+dialog .dentro { padding: 22px 24px 24px; }
+dialog h2 { margin: 0 0 4px; font-size: 21px; }
+dialog p.sub { margin: 0 0 18px; color: var(--suave); font-size: 14.5px; }
+dialog label { display: block; font-size: 13.5px; color: var(--suave); margin: 12px 0 4px; }
+dialog input {
+  width: 100%; padding: 9px 11px; border: 1px solid var(--borde); border-radius: 6px;
+  background: var(--papel); color: var(--tinta); font: inherit;
+}
+dialog .fila-botones { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
+dialog .error { color: var(--tierra); font-size: 14px; margin: 12px 0 0; }
+dialog .cambiar { background: none; border: 0; color: var(--azul); padding: 0; font-size: 14px; text-decoration: underline; }
+.rescate {
+  font-family: var(--mono); font-size: 17px; letter-spacing: .04em; background: var(--codigo-fondo);
+  border: 1px solid var(--borde); border-radius: 6px; padding: 12px; text-align: center; margin: 14px 0;
+  user-select: all;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="fila">
+    <a class="marca" href="https://fal-lang.org">Fal<span>.</span></a>
+    <span class="migas">Academia</span>
+    <div class="derecha">
+      <div class="avance" title="Lecciones terminadas">
+        <span id="avanceTexto">0 de 32</span>
+        <span class="barra-avance"><i id="avanceBarra"></i></span>
+      </div>
+      <a class="opcional" href="https://fal-lang.org/probar.html">Probar suelto</a>
+      <span id="zonaCuenta"></span>
+    </div>
+  </div>
+</nav>
+
+<div class="disposicion">
+  <aside id="indice"></aside>
+
+  <main>
+    <div class="leccion">
+      <h1 id="lecTitulo">Cargando…</h1>
+      <p class="donde" id="lecDonde"></p>
+      <div class="cuerpo" id="lecCuerpo"></div>
+      <div class="tarea"><b>Tu turno</b><span id="lecTarea"></span></div>
+    </div>
+
+    <div class="taller">
+      <div class="panel">
+        <div class="cabeza">Tu programa</div>
+        <textarea id="programa" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+      </div>
+      <div class="panel">
+        <div class="cabeza">Lo que sale</div>
+        <pre class="salida" id="salida"><span class="aviso">Escribe tu solución y pulsa «Comprobar».</span></pre>
+        <div id="lienzo" hidden></div>
+      </div>
+    </div>
+
+    <div class="panel" id="cajaEntradas" hidden style="margin-top:14px">
+      <div class="cabeza">Respuestas preparadas, una por línea</div>
+      <textarea id="entradas" spellcheck="false" autocomplete="off"></textarea>
+    </div>
+
+    <div class="acciones">
+      <button class="btn lleno" id="comprobar" disabled>Cargando el lenguaje…</button>
+      <button class="btn gris" id="anterior">Anterior</button>
+      <button class="btn gris" id="siguiente">Siguiente</button>
+      <button class="btn gris" id="pista">Ver la solución</button>
+      <span class="veredicto" id="veredicto"></span>
+    </div>
+  </main>
+</div>
+
+<dialog id="dialogoCuenta">
+  <form method="dialog" class="dentro" id="formCuenta">
+    <h2 id="dlgTitulo">Guardar mi progreso</h2>
+    <p class="sub" id="dlgSub">Para seguir el curso desde otro sitio. No pedimos correo.</p>
+    <label for="dlgUsuario">Nombre</label>
+    <input id="dlgUsuario" autocomplete="username" minlength="3" maxlength="24" required>
+    <label for="dlgClave">Contraseña</label>
+    <input id="dlgClave" type="password" autocomplete="current-password" minlength="8" required>
+    <p class="error" id="dlgError" hidden></p>
+    <div class="fila-botones">
+      <button class="btn lleno" id="dlgAceptar" type="submit">Crear cuenta</button>
+      <button class="btn gris" type="button" id="dlgCancelar">Ahora no</button>
+      <button class="cambiar" type="button" id="dlgCambiar">Ya tengo una</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dialogoRescate">
+  <div class="dentro">
+    <h2>Guarda este código</h2>
+    <p class="sub">Es lo único que te devuelve la cuenta si olvidas la contraseña.
+      No lo podemos volver a enseñar, porque no lo guardamos.</p>
+    <div class="rescate" id="textoRescate"></div>
+    <div class="fila-botones">
+      <button class="btn lleno" id="rescateCopiar">Copiar</button>
+      <button class="btn gris" id="rescateHecho">Ya lo he guardado</button>
+    </div>
+  </div>
+</dialog>
+
+<script type="module">
+import { LECCIONES, MODULOS } from "./curso.js";
+import { cuenta, juntarProgresos } from "./cuenta.js";
+
+const $ = (id) => document.getElementById(id);
+const $programa = $("programa");
+const $entradas = $("entradas");
+const $salida = $("salida");
+const $lienzo = $("lienzo");
+const $veredicto = $("veredicto");
+
+let actual = 0;
+let hechas = new Set();
+let borradores = {};
+let dentro = false;
+
+// --- Guardar el progreso -------------------------------------------------
+//
+// Siempre en este navegador, y además en la cuenta si hay una. El orden
+// importa: si el servidor está caído o el alumno no tiene cuenta, seguir
+// estudiando tiene que funcionar igual.
+
+const LLAVE = "fal_academia";
+
+function leerLocal() {
+  try {
+    const g = JSON.parse(localStorage.getItem(LLAVE) || "null");
+    if (!g) return;
+    hechas = new Set(g.hechas || []);
+    borradores = g.borradores || {};
+    if (Number.isInteger(g.actual) && g.actual < LECCIONES.length) actual = g.actual;
+  } catch (e) {}
+}
+
+function comoObjeto() {
+  return { hechas: [...hechas].sort((a, b) => a - b), actual, borradores };
+}
+
+let esperando = null;
+function guardar() {
+  try {
+    localStorage.setItem(LLAVE, JSON.stringify(comoObjeto()));
+  } catch (e) {}
+  pintarAvance();
+  if (!dentro) return;
+  // Al servidor se sube con calma. Guardar en cada tecla sería una petición
+  // por letra escrita, y el plan gratuito tiene un tope diario de escrituras
+  // que no hay por qué gastar en eso.
+  clearTimeout(esperando);
+  esperando = setTimeout(() => {
+    cuenta.subirProgreso(comoObjeto()).catch(() => {});
+  }, 2500);
+}
+
+// --- Pintar --------------------------------------------------------------
+
+function pintarIndice() {
+  const aside = $("indice");
+  aside.innerHTML = "";
+  MODULOS.forEach((nombre, m) => {
+    const h = document.createElement("h2");
+    h.textContent = nombre;
+    aside.appendChild(h);
+    const ol = document.createElement("ol");
+    LECCIONES.forEach((l, i) => {
+      if (l.modulo !== m) return;
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = "#" + (i + 1);
+      a.className = i === actual ? "actual" : "";
+      a.innerHTML = '<span class="marca-hecha">' + (hechas.has(i) ? "✓" : "") + "</span>";
+      a.appendChild(document.createTextNode(l.titulo));
+      a.onclick = (ev) => { ev.preventDefault(); ir(i); };
+      li.appendChild(a);
+      ol.appendChild(li);
+    });
+    aside.appendChild(ol);
+  });
+}
+
+function pintarAvance() {
+  $("avanceTexto").textContent = hechas.size + " de " + LECCIONES.length;
+  $("avanceBarra").style.width = (hechas.size / LECCIONES.length * 100) + "%";
+}
+
+function pintar() {
+  const l = LECCIONES[actual];
+  $("lecTitulo").textContent = l.titulo;
+  $("lecDonde").textContent = MODULOS[l.modulo] + " · lección " + (actual + 1) + " de " + LECCIONES.length;
+  $("lecCuerpo").innerHTML = l.cuerpo;
+  $("lecTarea").innerHTML = " " + l.tarea;
+
+  const guardado = borradores[actual];
+  $programa.value = typeof guardado === "string" && guardado !== "" ? guardado : (l.inicial || "");
+  $("cajaEntradas").hidden = !l.entradas;
+  $entradas.value = l.entradas || "";
+
+  $salida.innerHTML = '<span class="aviso">Escribe tu solución y pulsa «Comprobar».</span>';
+  $lienzo.hidden = true;
+  $lienzo.innerHTML = "";
+  $veredicto.textContent = "";
+  $veredicto.className = "veredicto";
+  $("anterior").disabled = actual === 0;
+  $("siguiente").disabled = actual === LECCIONES.length - 1;
+  $("pista").textContent = "Ver la solución";
+  pintarIndice();
+  pintarAvance();
+  document.title = l.titulo + " · Academia de Fal";
+}
+
+function ir(i) {
+  if (i < 0 || i >= LECCIONES.length) return;
+  actual = i;
+  history.replaceState(null, "", "#" + (i + 1));
+  guardar();
+  pintar();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// --- El intérprete -------------------------------------------------------
+
+let trabajador = null;
+let corriendo = false;
+let recogido = "";
+
+function arrancarInterprete() {
+  trabajador = new Worker("trabajador.js");
+  trabajador.onmessage = (ev) => {
+    const m = ev.data || {};
+    if (m.tipo === "listo") {
+      $("comprobar").disabled = false;
+      $("comprobar").textContent = "Comprobar";
+      return;
+    }
+    if (m.tipo === "salida") {
+      recogido += m.texto;
+      $salida.textContent = recogido;
+      return;
+    }
+    if (m.tipo === "fin") {
+      corriendo = false;
+      terminar(m.error, m.dibujo);
+    }
+  };
+  trabajador.onerror = () => {
+    $("comprobar").disabled = true;
+    $("comprobar").textContent = "No cargó el lenguaje";
+  };
+}
+
+function comprobar() {
+  if (corriendo) return;
+  const l = LECCIONES[actual];
+  const programa = $programa.value;
+
+  // Las palabras obligatorias se miran antes de ejecutar. Si el ejercicio
+  // pide un bucle y el alumno escribe tres veces la misma línea, la salida
+  // sería correcta y no habría aprendido lo que la lección enseña.
+  for (const palabra of l.debeUsar || []) {
+    if (!new RegExp("\\b" + palabra + "\\b").test(programa)) {
+      $veredicto.className = "veredicto mal";
+      $veredicto.textContent = 'Te falta usar "' + palabra + '" en este ejercicio.';
+      return;
+    }
+  }
+
+  corriendo = true;
+  recogido = "";
+  $salida.textContent = "";
+  $lienzo.hidden = true;
+  $lienzo.innerHTML = "";
+  $veredicto.textContent = "";
+  $veredicto.className = "veredicto";
+  $("comprobar").textContent = "Ejecutando…";
+  trabajador.postMessage({ tipo: "correr", programa, respuestas: $entradas.value });
+}
+
+function igualan(a, b) {
+  const limpia = (t) => String(t).trim().split("\n").map((x) => x.trim()).join("\n").toLowerCase();
+  return limpia(a) === limpia(b);
+}
+
+function terminar(error, dibujo) {
+  $("comprobar").textContent = "Comprobar";
+  const l = LECCIONES[actual];
+
+  if (dibujo) {
+    $lienzo.innerHTML = dibujo;
+    $lienzo.hidden = false;
+  }
+  if (error) {
+    $salida.innerHTML = '<span class="malo"></span>';
+    $salida.firstChild.textContent = error;
+    $veredicto.className = "veredicto mal";
+    $veredicto.textContent = "El programa no llegó a terminar. Lee lo que dice el error.";
+    return;
+  }
+
+  const acertado = l.dibuja ? !!dibujo : igualan(recogido, l.espera);
+  if (!acertado) {
+    $veredicto.className = "veredicto mal";
+    $veredicto.textContent = l.dibuja
+      ? "No ha salido ningún dibujo. ¿Has usado camina y gira?"
+      : "Todavía no es eso. Compara lo que sale con lo que pide el ejercicio.";
+    if (l.pista) $veredicto.textContent += " " + l.pista;
+    return;
+  }
+
+  $veredicto.className = "veredicto bien";
+  $veredicto.textContent = actual === LECCIONES.length - 1
+    ? "Hecho. Has terminado el curso entero."
+    : "Bien. Pasa a la siguiente.";
+  if (!hechas.has(actual)) {
+    hechas.add(actual);
+    guardar();
+    pintarIndice();
+  }
+}
+
+// --- La cuenta -----------------------------------------------------------
+
+function pintarCuenta(usuario) {
+  dentro = !!usuario;
+  const zona = $("zonaCuenta");
+  zona.innerHTML = "";
+  const b = document.createElement("button");
+  b.className = dentro ? "btn gris" : "btn";
+  b.textContent = dentro ? usuario : "Guardar progreso";
+  b.onclick = dentro ? salirDeLaCuenta : abrirDialogo;
+  b.title = dentro ? "Pulsa para salir de la cuenta" : "Crea una cuenta para seguir en otro aparato";
+  zona.appendChild(b);
+}
+
+let modoRegistro = true;
+function abrirDialogo() {
+  modoRegistro = true;
+  ponerModo();
+  $("dlgError").hidden = true;
+  $("dialogoCuenta").showModal();
+}
+
+function ponerModo() {
+  $("dlgTitulo").textContent = modoRegistro ? "Guardar mi progreso" : "Entrar";
+  $("dlgSub").textContent = modoRegistro
+    ? "Para seguir el curso desde otro sitio. No pedimos correo."
+    : "Con el nombre y la contraseña que elegiste.";
+  $("dlgAceptar").textContent = modoRegistro ? "Crear cuenta" : "Entrar";
+  $("dlgCambiar").textContent = modoRegistro ? "Ya tengo una" : "Crear una nueva";
+  $("dlgClave").autocomplete = modoRegistro ? "new-password" : "current-password";
+}
+
+$("dlgCambiar").onclick = () => { modoRegistro = !modoRegistro; ponerModo(); $("dlgError").hidden = true; };
+$("dlgCancelar").onclick = () => $("dialogoCuenta").close();
+
+$("formCuenta").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const usuario = $("dlgUsuario").value.trim();
+  const clave = $("dlgClave").value;
+  const boton = $("dlgAceptar");
+  const error = $("dlgError");
+  error.hidden = true;
+  boton.disabled = true;
+  boton.textContent = "Un momento…";
+
+  try {
+    const r = modoRegistro
+      ? await cuenta.registrar(usuario, clave)
+      : await cuenta.entrar(usuario, clave);
+    pintarCuenta(r.usuario);
+    $("dialogoCuenta").close();
+
+    if (r.rescate) {
+      $("textoRescate").textContent = r.rescate;
+      $("dialogoRescate").showModal();
+    }
+    await sincronizar();
+  } catch (fallo) {
+    error.textContent = fallo.message;
+    error.hidden = false;
+  } finally {
+    boton.disabled = false;
+    ponerModo();
+  }
+});
+
+$("rescateCopiar").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText($("textoRescate").textContent);
+    $("rescateCopiar").textContent = "Copiado";
+  } catch (e) {
+    $("rescateCopiar").textContent = "Cópialo a mano";
+  }
+};
+$("rescateHecho").onclick = () => $("dialogoRescate").close();
+
+async function salirDeLaCuenta() {
+  if (!confirm("¿Salir de la cuenta? Tu progreso se queda guardado en ella.")) return;
+  try { await cuenta.salir(); } catch (e) {}
+  pintarCuenta(null);
+}
+
+// Al entrar se juntan los dos progresos en vez de que uno pise al otro.
+// Alguien puede haber avanzado en este navegador sin cuenta y tener otro
+// tanto guardado en ella, y perder cualquiera de los dos es perder trabajo.
+async function sincronizar() {
+  try {
+    const alla = await cuenta.bajarProgreso();
+    const junto = juntarProgresos(comoObjeto(), alla);
+    hechas = new Set(junto.hechas);
+    borradores = junto.borradores;
+    if (Number.isInteger(junto.actual)) actual = junto.actual;
+    guardar();
+    await cuenta.subirProgreso(comoObjeto());
+    pintar();
+  } catch (e) {}
+}
+
+// --- Enganchar todo ------------------------------------------------------
+
+$("comprobar").onclick = comprobar;
+$("anterior").onclick = () => ir(actual - 1);
+$("siguiente").onclick = () => ir(actual + 1);
+$("pista").onclick = () => {
+  const l = LECCIONES[actual];
+  if (!l.solucion) return;
+  $programa.value = l.solucion;
+  borradores[actual] = l.solucion;
+  guardar();
+  $("pista").textContent = "Ahí la tienes";
+};
+
+$programa.addEventListener("input", () => {
+  borradores[actual] = $programa.value;
+  guardar();
+});
+
+// Ctrl+Enter para comprobar sin soltar el teclado.
+$programa.addEventListener("keydown", (ev) => {
+  if ((ev.ctrlKey || ev.metaKey) && ev.key === "Enter") { ev.preventDefault(); comprobar(); }
+});
+
+window.addEventListener("hashchange", () => {
+  const n = parseInt(location.hash.slice(1), 10);
+  if (n >= 1 && n <= LECCIONES.length && n - 1 !== actual) { actual = n - 1; pintar(); }
+});
+
+leerLocal();
+const pedida = parseInt(location.hash.slice(1), 10);
+if (pedida >= 1 && pedida <= LECCIONES.length) actual = pedida - 1;
+pintar();
+arrancarInterprete();
+
+cuenta.quienSoy().then((r) => {
+  pintarCuenta(r.dentro ? r.usuario : null);
+  if (r.dentro) sincronizar();
+});
+</script>
+
+</body>
+</html>

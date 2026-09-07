@@ -2,3 +2,10 @@ node_modules/
 .wrangler/
 dist/
 .dev.vars
+
+# Los genera el flujo de publicación a partir del repositorio de Fal, y son
+# el intérprete entero: no tienen por qué vivir aquí dentro.
+web/fal.wasm
+web/wasm_exec.js
+web/trabajador.js
+api/fal-linux

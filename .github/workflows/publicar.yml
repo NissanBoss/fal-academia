@@ -1,0 +1,84 @@
+name: Publicar la academia
+
+# Compila el intérprete de Fal a WebAssembly, comprueba que todas las
+# lecciones siguen siendo ciertas, y publica.
+#
+# El intérprete no vive en este repositorio: se saca del de Fal en cada
+# publicación. Así la academia siempre enseña el lenguaje que hay ahora
+# mismo, y no queda un binario de doce megas en el historial de git.
+#
+# Para que funcione hay que activarlo una vez:
+#   Settings -> Pages -> Source -> GitHub Actions
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  # Una vez por semana, para que un cambio en el lenguaje que rompa una
+  # lección se note aunque nadie toque este repositorio.
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.desplegar.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Traer el lenguaje
+        uses: actions/checkout@v5
+        with:
+          repository: NissanBoss/Fal
+          path: fal
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Compilar el intérprete a WebAssembly
+        run: |
+          cd fal
+          GOOS=js GOARCH=wasm go build -trimpath -ldflags "-s -w" -o ../web/fal.wasm .
+          cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" ../web/
+          cp docs/trabajador.js ../web/
+          cd ..
+          ls -lh web/fal.wasm web/wasm_exec.js web/trabajador.js
+
+      # Esto es lo que impide publicar un curso roto. Cada lección promete
+      # una salida concreta; aquí se ejecutan todas las soluciones con el
+      # intérprete recién compilado y se comprueba que la cumplen. Si el
+      # lenguaje cambia y una lección deja de ser cierta, no se publica.
+      - name: Comprobar que las lecciones siguen siendo ciertas
+        run: |
+          cd fal
+          go build -trimpath -o ../api/fal-linux .
+          cd ../web
+          FAL=../api/fal-linux node comprobar-curso.mjs
+
+      - name: El servidor de cuentas no se ha roto
+        run: cd api && node pruebas.mjs
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+      - id: desplegar
+        uses: actions/deploy-pages@v4
