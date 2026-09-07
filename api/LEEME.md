@@ -1,7 +1,7 @@
 # El servidor de la academia
 
-Guarda las cuentas de los alumnos y por dónde van en el curso. Corre en
-Cloudflare Workers y no cuesta nada.
+Guarda las cuentas de los alumnos y por dónde van en el curso. Va en
+Cloudflare y no cuesta nada.
 
 ## Qué guarda de cada persona
 
@@ -16,38 +16,65 @@ Eso no es descuido, es el diseño. Un curso de programación no necesita saber
 quién eres, y lo que no se guarda no se puede perder, ni filtrar, ni hay que
 borrarlo cuando alguien lo pida.
 
+## Por qué esto es Pages y no un Worker
+
+Parece un Worker: es una API y no sirve ninguna página. Va como proyecto de
+Pages por el dominio.
+
+Un Worker con nombre propio exige que **fal-lang.org entero** esté gestionado
+por Cloudflare, con los nameservers cambiados en Namecheap. Pages se conforma
+con un CNAME desde el registrador de siempre, así que `api.fal-lang.org`
+funciona sin mover nada de lo que ya está en marcha.
+
+Y que la API cuelgue del mismo dominio que la academia no es estética. La
+sesión viaja en una cookie, y las cookies se comparten por dominio: desde un
+nombre de otro sitio el navegador la trataría como de terceros y la tiraría,
+así que nadie podría entrar y el fallo no diría por qué. Eso pasó de verdad
+durante las pruebas, con la página en `localhost` y esto en `127.0.0.1`.
+
 ## Cómo se pone en marcha
 
 Hace falta una cuenta de Cloudflare, que es gratis y no pide tarjeta, y
-tener Node instalado.
+tener Node. En Windows no lo hay, pero dentro de WSL sí.
 
 ```bash
 npx wrangler login
 ```
 
+Eso abre el navegador para que autorices. Es el único paso que no se puede
+automatizar.
+
 ```bash
 npx wrangler d1 create fal-academia
 ```
 
-Ese comando devuelve un `database_id`. Hay que pegarlo en `wrangler.toml`,
-donde ahora pone `PEGA-AQUI-EL-QUE-TE-DE-WRANGLER`.
+Devuelve un `database_id`. Hay que pegarlo en `wrangler.toml`, donde ahora
+pone `PEGA-AQUI-EL-QUE-TE-DE-WRANGLER`.
 
 ```bash
 npx wrangler d1 execute fal-academia --remote --file=esquema.sql
 ```
 
 ```bash
-npx wrangler deploy
+npx wrangler pages project create fal-academia-api --production-branch main
 ```
 
-Y por último, en el panel de Cloudflare, en Workers, el worker
-`fal-academia`, pestaña Settings, Domains & Routes, añadir el nombre
-`api.fal-lang.org`.
+```bash
+npx wrangler pages deploy
+```
 
-**Tiene que ser un subdominio del mismo dominio que la academia.** La sesión
-viaja en una cookie, y las cookies se comparten por dominio: desde un nombre
-distinto el navegador la trataría como de terceros y la tiraría, así que
-nadie podría entrar y el fallo no diría por qué.
+Y quedan dos cosas a mano:
+
+1. En el panel de Cloudflare, Workers & Pages, el proyecto
+   `fal-academia-api`, pestaña **Custom domains**, añadir `api.fal-lang.org`.
+2. En Namecheap, Advanced DNS, un registro más:
+
+   | Tipo | Host | Valor |
+   |---|---|---|
+   | CNAME Record | api | fal-academia-api.pages.dev. |
+
+El orden importa: primero el dominio en Cloudflare y después el CNAME, o el
+nombre queda resolviendo a un sitio que todavía no lo reconoce.
 
 ## Comprobar que va
 
@@ -56,6 +83,22 @@ curl https://api.fal-lang.org/api/salud
 ```
 
 Tiene que contestar `bien`.
+
+## Probarlo en local antes de subir nada
+
+```bash
+npx wrangler d1 execute fal-academia --local --file=esquema.sql
+npx wrangler pages dev --port 8787
+```
+
+La academia detecta sola que está en una máquina de trabajo y habla con ese
+servidor en lugar de con el de verdad, así que se puede probar el registro
+entero sin tocar nada publicado. Ojo con abrir la academia en `localhost` y
+no en `127.0.0.1`: tienen que ser el mismo nombre o la cookie no viaja.
+
+Para pruebas locales hay que poner un `database_id` cualquiera con forma de
+UUID en `wrangler.toml`, porque Pages no admite un archivo de configuración
+alternativo y lee ese.
 
 ## Las pruebas
 
@@ -69,15 +112,15 @@ guardada no se parece a la que llegó, que dos cuentas con la misma
 contraseña se guardan distinto, y que los nombres raros no pasan.
 
 La primera de esas es la que importa. El estirado se hace en
-`web/cuenta.js` y se comprueba en `worker.js`, dos archivos separados: si un
-día alguien cambia el número de vueltas en uno y no en el otro, todo seguirá
+`web/cuenta.js` y se comprueba aquí, en dos archivos separados: si un día
+alguien cambia el número de vueltas en uno y no en el otro, todo seguirá
 funcionando y nadie podrá entrar. La prueba lee los dos archivos y los
 compara.
 
 ## Por qué la contraseña se estira en el navegador
 
 Es la decisión rara de este servidor y está explicada entera arriba del todo
-de `worker.js`.
+de `servidor.js`.
 
 En corto: el plan gratuito da diez milisegundos de procesador por petición,
 y estirar una contraseña como se debe gasta bastante más. Así que el trabajo
@@ -107,5 +150,4 @@ sirve un buen hash. Lo que no se puede hacer nunca es servir esto sin HTTPS.
 | Base de datos | 5 GB | unos 2 KB por alumno |
 
 Con esos números caben del orden de veinte mil alumnos usándolo a diario
-antes de que haya que mirar la factura. Si algún día se llega ahí, el plan
-de pago son cinco dólares al mes.
+antes de que haya que mirar la factura.

@@ -1,25 +1,24 @@
-# Configuracion del servidor de la academia.
+# Configuración del servidor de la academia.
 #
-# Antes de la primera subida hay que crear la base de datos y pegar aqui el
-# identificador que devuelve:
+# Va como proyecto de Cloudflare Pages y no como Worker suelto, aunque lo
+# único que sirve sea una API. El motivo es el dominio: un Worker con nombre
+# propio exige que fal-lang.org entero esté gestionado por Cloudflare, con
+# los nameservers cambiados en Namecheap. Pages se conforma con un CNAME, así
+# que api.fal-lang.org funciona sin mover nada de lo que ya está en marcha.
 #
-#   npx wrangler d1 create fal-academia
-#   npx wrangler d1 execute fal-academia --remote --file=esquema.sql
-#   npx wrangler deploy
+# Y que api cuelgue del mismo dominio que la academia no es estética: la
+# sesión viaja en una cookie, y las cookies se comparten por dominio. Desde
+# un nombre de otro sitio el navegador la trataría como de terceros y la
+# tiraría, así que nadie podría entrar y el fallo no diría por qué.
 #
-# Y en el panel de Cloudflare, en Workers, Settings, Domains & Routes, se le
-# pone el nombre api.fal-lang.org. Tiene que ser un subdominio del mismo
-# dominio que la academia: la galleta de sesion se comparte por dominio, y
-# desde otro nombre distinto el navegador la trataria como de terceros y la
-# tiraria.
+# Para ponerlo en marcha, los pasos están en LEEME.md.
 
-name = "fal-academia"
-main = "worker.js"
+name = "fal-academia-api"
 compatibility_date = "2026-09-01"
+pages_build_output_dir = "publico"
 
-# Quien puede llamar a este servidor. Cualquier otra pagina que lo intente
-# se queda sin respuesta utilizable, que es lo que impide que una web
-# cualquiera use la sesion de un alumno para leer o cambiar su progreso.
+# Quién puede llamar a este servidor. Cualquier otra página se queda sin
+# respuesta utilizable, y además lo que cambie datos se rechaza de plano.
 [vars]
 ORIGENES = "https://aprende.fal-lang.org,https://fal-lang.org,http://localhost:8099"
 
@@ -28,7 +27,7 @@ binding = "DB"
 database_name = "fal-academia"
 database_id = "PEGA-AQUI-EL-QUE-TE-DE-WRANGLER"
 
-# Sin analitica ni registros de peticiones. Lo que no se apunta no hace
-# falta borrarlo despues.
+# Sin analítica ni registros de peticiones. Lo que no se apunta no hace
+# falta borrarlo después.
 [observability]
 enabled = false

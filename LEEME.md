@@ -11,7 +11,7 @@ ejercicios que se corrigen solos, desde escribir en pantalla hasta clausuras.
 | `web/index.html` | La academia entera: índice, lección, editor y corrección. |
 | `web/cuenta.js` | El registro y la entrada, por el lado del navegador. |
 | `web/comprobar-curso.mjs` | Pasa todas las soluciones por el intérprete de verdad. |
-| `api/` | El servidor de cuentas, en Cloudflare Workers. Tiene su propio LEEME. |
+| `api/` | El servidor de cuentas, en Cloudflare Pages. Tiene su propio LEEME. |
 
 El intérprete no está aquí. Se saca del repositorio de Fal en cada
 publicación y se compila a WebAssembly, así que la academia siempre enseña

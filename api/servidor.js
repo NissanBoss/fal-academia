@@ -36,28 +36,44 @@ const DIAS_DE_SESION = 180;
 const FALLOS_PERMITIDOS = 8;
 const MINUTOS_CASTIGO = 15;
 
-export default {
-  async fetch(peticion, entorno) {
-    const origen = permitido(peticion, entorno);
-    if (peticion.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: cabeceras(origen) });
+// La puerta de entrada. La llama functions/api/[[camino]].js, que es lo que
+// Cloudflare Pages ejecuta para cualquier dirección que empiece por /api/.
+//
+// Esto va en Pages y no en un Worker suelto por una razón de fontanería que
+// no se ve desde aquí: un Worker con nombre propio exige que el dominio
+// entero esté gestionado por Cloudflare, con los nameservers cambiados.
+// Pages se conforma con un CNAME desde el registrador de siempre, así que
+// api.fal-lang.org puede colgar del mismo dominio sin mover nada de lo que
+// ya funciona. Y que cuelgue del mismo dominio es justo lo que hace que la
+// cookie de sesión viaje: desde otro nombre el navegador la tiraría.
+export async function manejar(peticion, entorno) {
+  const origen = permitido(peticion, entorno);
+  if (peticion.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: cabeceras(origen) });
+  }
+
+  // Nada que cambie algo se acepta desde una página que no sea la academia.
+  // El navegador ya lo impide por su cuenta, pero eso solo protege a quien
+  // usa un navegador: cualquiera puede montar una petición a mano.
+  if (peticion.method !== "GET" && !esOrigenBueno(peticion, entorno)) {
+    return responder({ error: "esa página no puede pedir esto" }, 403, origen);
+  }
+
+  const ruta = new URL(peticion.url).pathname.replace(/\/+$/, "");
+  try {
+    const respuesta = await repartir(ruta, peticion, entorno);
+    for (const [k, v] of Object.entries(cabeceras(origen))) {
+      respuesta.headers.set(k, v);
     }
-    const ruta = new URL(peticion.url).pathname.replace(/\/+$/, "");
-    try {
-      const respuesta = await repartir(ruta, peticion, entorno);
-      for (const [k, v] of Object.entries(cabeceras(origen))) {
-        respuesta.headers.set(k, v);
-      }
-      return respuesta;
-    } catch (fallo) {
-      // Nunca sale el detalle hacia fuera. Un mensaje de error de la base de
-      // datos cuenta como esta hecha por dentro, y eso es media faena para
-      // quien esta buscando por donde entrar.
-      console.error(fallo && fallo.stack ? fallo.stack : fallo);
-      return responder({ error: "algo se ha roto aqui dentro" }, 500, origen);
-    }
-  },
-};
+    return respuesta;
+  } catch (fallo) {
+    // Nunca sale el detalle hacia fuera. Un mensaje de error de la base de
+    // datos cuenta como esta hecha por dentro, y eso es media faena para
+    // quien esta buscando por donde entrar.
+    console.error(fallo && fallo.stack ? fallo.stack : fallo);
+    return responder({ error: "algo se ha roto aqui dentro" }, 500, origen);
+  }
+}
 
 async function repartir(ruta, peticion, entorno) {
   const metodo = peticion.method;
@@ -78,10 +94,23 @@ async function repartir(ruta, peticion, entorno) {
 
 // Solo contestan las paginas de la academia. Un navegador no deja que otra
 // web use la sesion de esta si el origen no esta en esta lista.
+function listaDeOrigenes(entorno) {
+  return (entorno.ORIGENES || "").split(",").map((o) => o.trim()).filter(Boolean);
+}
+
 function permitido(peticion, entorno) {
   const origen = peticion.headers.get("Origin") || "";
-  const buenos = (entorno.ORIGENES || "").split(",").map((o) => o.trim()).filter(Boolean);
+  const buenos = listaDeOrigenes(entorno);
   return buenos.includes(origen) ? origen : buenos[0] || "";
+}
+
+// Si el navegador dice de qué página viene, tiene que ser una de las
+// nuestras. Sin cabecera de origen no se acepta nada que cambie datos,
+// porque eso es lo que trae una petición fabricada a mano.
+function esOrigenBueno(peticion, entorno) {
+  const origen = peticion.headers.get("Origin");
+  if (!origen) return false;
+  return listaDeOrigenes(entorno).includes(origen);
 }
 
 function cabeceras(origen) {
