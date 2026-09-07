@@ -25,9 +25,10 @@ ORIGENES = "https://aprende.fal-lang.org,https://fal-lang.org,http://localhost:8
 [[d1_databases]]
 binding = "DB"
 database_name = "fal-academia"
-database_id = "PEGA-AQUI-EL-QUE-TE-DE-WRANGLER"
+database_id = "5e8461cb-1c6f-4e4a-bbe7-de2ef900ed34"
 
-# Sin analítica ni registros de peticiones. Lo que no se apunta no hace
-# falta borrarlo después.
-[observability]
-enabled = false
+# Aquí iba una sección para apagar los registros de peticiones, y Pages no
+# la admite en el archivo: la rechaza y no despliega. En Pages eso se
+# gobierna desde el panel, en el proyecto, apartado Logs. Merece la pena
+# entrar a apagarlo, porque lo que no se apunta no hace falta borrarlo
+# después, que es de lo que va todo este servidor.
