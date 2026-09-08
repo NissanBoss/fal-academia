@@ -104,7 +104,12 @@ function cerosDelante(par) {
 // Devuelve tambien cuantos intentos costo. No es un adorno: es lo que
 // permite medir si la dificultad esta bien puesta en una maquina de
 // verdad, que es como se decidio la que hay.
-export function resolver(semilla, ceros) {
+//
+// Si le pasan una funcion, la llama de vez en cuando con los intentos que
+// lleva, para poder enseñarlo por pantalla. No se puede dar un porcentaje:
+// encontrar el numero es cuestion de suerte y puede pasar en el intento mil
+// o en el dos millones.
+export function resolver(semilla, ceros, avisar) {
   const base = new TextEncoder().encode(semilla + ":");
   const bytes = new Uint8Array(64);
   bytes.set(base);
@@ -116,6 +121,7 @@ export function resolver(semilla, ceros) {
     if (cerosDelante(resumenDeUnBloque(bytes, largo)) >= ceros) {
       return { nonce: String(n), intentos: n + 1 };
     }
+    if (avisar && n > 0 && (n & 32767) === 0) avisar(n);
   }
   throw new Error("no se ha encontrado la solucion");
 }

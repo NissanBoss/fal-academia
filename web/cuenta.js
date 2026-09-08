@@ -73,35 +73,46 @@ async function llamar(camino, opciones) {
 // pagina el segundo que tarda. Si por lo que sea no se puede abrir el hilo,
 // se hace aqui mismo: mas vale una pagina tiesa un segundo que una que no
 // deja registrarse.
-function resolverReto(reto) {
+function resolverReto(reto, avisar) {
   return new Promise((listo, falla) => {
+    const aMano = () => import("./trabajo.js")
+      .then((m) => listo(m.resolver(reto.semilla, reto.ceros, avisar)), falla);
+
     let obrero;
     try {
       obrero = new Worker(new URL("./obrero.js", import.meta.url), { type: "module" });
     } catch (e) {
-      import("./trabajo.js").then((m) => listo(m.resolver(reto.semilla, reto.ceros)), falla);
+      aMano();
       return;
     }
     obrero.onmessage = (aviso) => {
+      // Los avisos de como va llegan por el mismo canal que el resultado.
+      if (aviso.data && aviso.data.van !== undefined) {
+        if (avisar) avisar(aviso.data.van);
+        return;
+      }
       obrero.terminate();
       if (aviso.data && aviso.data.error) falla(new Error(aviso.data.error));
       else listo(aviso.data);
     };
     obrero.onerror = () => {
       obrero.terminate();
-      import("./trabajo.js").then((m) => listo(m.resolver(reto.semilla, reto.ceros)), falla);
+      aMano();
     };
     obrero.postMessage({ semilla: reto.semilla, ceros: reto.ceros });
   });
 }
 
 export const cuenta = {
-  async registrar(usuario, clave) {
+  // El tercer argumento, si se pasa, va recibiendo cuantos intentos lleva
+  // la prueba de trabajo. Sirve para poder enseñar que esta pasando algo:
+  // una espera muda de dos segundos parece una pagina rota.
+  async registrar(usuario, clave, avisar) {
     const estirado = await estirar(usuario, clave);
     // Antes de crear una cuenta hay que pagar un poco de trabajo. Se pide
     // la semilla, se resuelve aqui, y va con el resto.
     const reto = await llamar("/api/reto?usuario=" + encodeURIComponent(usuario), { method: "GET" });
-    const { nonce } = await resolverReto(reto);
+    const { nonce } = await resolverReto(reto, avisar);
     return llamar("/api/registro", {
       method: "POST",
       body: JSON.stringify({ usuario, estirado, nonce }),
@@ -111,7 +122,7 @@ export const cuenta = {
   // Entrar no pide trabajo la primera vez. Solo si ya se ha fallado antes
   // con ese nombre, y entonces el servidor manda la semilla dentro del
   // error y se reintenta una vez sin molestar a nadie.
-  async entrar(usuario, clave) {
+  async entrar(usuario, clave, avisar) {
     const estirado = await estirar(usuario, clave);
     const mandar = (nonce) => llamar("/api/entrar", {
       method: "POST",
@@ -121,7 +132,7 @@ export const cuenta = {
       return await mandar();
     } catch (fallo) {
       if (!fallo.reto) throw fallo;
-      const { nonce } = await resolverReto(fallo.reto);
+      const { nonce } = await resolverReto(fallo.reto, avisar);
       return mandar(nonce);
     }
   },

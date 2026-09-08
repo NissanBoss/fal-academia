@@ -754,10 +754,18 @@ $("formCuenta").addEventListener("submit", async (ev) => {
   boton.disabled = true;
   boton.textContent = "Un momento…";
 
+  // La prueba de trabajo tarda un par de segundos y hasta ahora no se veía:
+  // el botón ponía "un momento" y ya. Enseñar los intentos que lleva es la
+  // diferencia entre una página que está haciendo algo y una que parece
+  // colgada, y de paso deja ver que la comprobacion existe.
+  const avisar = (van) => {
+    boton.textContent = "Comprobando… " + Math.round(van / 1000) + " mil intentos";
+  };
+
   try {
     const r = modoRegistro
-      ? await cuenta.registrar(usuario, clave)
-      : await cuenta.entrar(usuario, clave);
+      ? await cuenta.registrar(usuario, clave, avisar)
+      : await cuenta.entrar(usuario, clave, avisar);
     pintarCuenta(r.usuario);
     $("dialogoCuenta").close();
     $("dlgClave").value = "";
