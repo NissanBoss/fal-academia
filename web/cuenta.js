@@ -144,4 +144,4 @@ export function juntarProgresos(aqui, alla) {
   };
 }
 
-export { estirar, VUELTAS };
+export { estirar, VUELTAS, API };

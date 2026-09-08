@@ -74,16 +74,20 @@ jobs:
       - name: El servidor de cuentas no se ha roto
         run: cd api && node pruebas.mjs
 
-      # El curso es una sola página, así que el sitemap es corto. Lleva la
-      # fecha del último cambio real del contenido, que es curso.js, y no la
-      # del despliegue.
+      # Aquí solo hay dos direcciones que valga la pena indexar, y cada una
+      # lleva la fecha del último cambio de verdad de su contenido, no la
+      # del despliegue. Los hilos del foro no salen: los pinta el navegador
+      # detrás de un almohadilla, así que no son direcciones que un buscador
+      # pueda pedir por su cuenta.
       - name: Hacer el sitemap
         run: |
-          fecha=$(git log -1 --format=%cs -- web/curso.js 2>/dev/null || date -I)
+          curso=$(git log -1 --format=%cs -- web/curso.js 2>/dev/null || date -I)
+          foro=$(git log -1 --format=%cs -- web/foro.html 2>/dev/null || date -I)
           cat > web/sitemap.xml <<XML
           <?xml version="1.0" encoding="UTF-8"?>
           <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-            <url><loc>https://aprende.fal-lang.org/</loc><lastmod>$fecha</lastmod><priority>1.0</priority></url>
+            <url><loc>https://aprende.fal-lang.org/</loc><lastmod>$curso</lastmod><priority>1.0</priority></url>
+            <url><loc>https://aprende.fal-lang.org/foro.html</loc><lastmod>$foro</lastmod><priority>0.7</priority></url>
           </urlset>
           XML
           sed -i 's/^          //' web/sitemap.xml

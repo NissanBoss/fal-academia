@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foro de Fal</title>
+<meta name="description" content="Dudas del curso, cosas hechas con Fal e ideas para el lenguaje. Leer no pide cuenta.">
+<link rel="canonical" href="https://aprende.fal-lang.org/foro.html">
+<meta property="og:title" content="Foro de Fal">
+<meta property="og:description" content="Dudas, proyectos e ideas alrededor de un lenguaje de programación en español.">
+<meta property="og:type" content="website">
+<style>
+:root {
+  --papel: #fbfaf7; --caja: #ffffff; --tinta: #1a1a18; --suave: #5f5c55;
+  --borde: #e2ded4; --azul: #1c4f8b; --tierra: #9c4420; --verde: #216e3f;
+  --codigo-fondo: #f6f4ef;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --papel: #16171a; --caja: #1d1f23; --tinta: #e8e6e1; --suave: #a2a099;
+    --borde: #30323a; --azul: #79b0e4; --tierra: #e0865c; --verde: #6fca92;
+    --codigo-fondo: #1a1c20;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+* { scrollbar-width: thin; scrollbar-color: var(--borde) transparent; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--borde); border-radius: 6px; border: 3px solid var(--papel); }
+::-webkit-scrollbar-thumb:hover { background: var(--suave); }
+
+body { margin: 0; background: var(--papel); color: var(--tinta); font: 16px/1.6 var(--sans); }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.25; text-wrap: balance; }
+a { color: var(--azul); }
+button { font: inherit; cursor: pointer; }
+code, pre, textarea, input { font-family: var(--mono); }
+
+nav { border-bottom: 1px solid var(--borde); background: var(--papel); position: sticky; top: 0; z-index: 20; }
+nav .fila { display: flex; align-items: center; gap: 16px; height: 56px; padding: 0 20px; max-width: 1000px; margin: 0 auto; }
+.marca { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--tinta); text-decoration: none; }
+.marca span { color: var(--tierra); }
+.migas { color: var(--suave); font-size: 15px; }
+nav .derecha { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 14.5px; }
+nav .derecha a { color: var(--suave); text-decoration: none; }
+nav .derecha a:hover { color: var(--tinta); }
+@media (max-width: 700px) { nav .derecha a.opcional { display: none; } }
+
+.btn { padding: 7px 14px; border-radius: 6px; border: 1px solid var(--azul); background: transparent; color: var(--azul); }
+.btn.lleno { background: var(--azul); color: var(--papel); }
+.btn.gris { border-color: var(--borde); color: var(--suave); }
+.btn.pequeno { padding: 4px 10px; font-size: 13px; }
+.btn:disabled { opacity: .5; cursor: default; }
+
+main { max-width: 1000px; margin: 0 auto; padding: 26px 20px 80px; }
+
+.cabecera-foro { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.cabecera-foro h1 { font-size: 27px; margin: 0; }
+.cabecera-foro .lejos { margin-left: auto; }
+
+.tiras { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.tira {
+  padding: 5px 12px; border: 1px solid var(--borde); border-radius: 20px;
+  font-size: 14px; color: var(--suave); text-decoration: none; background: var(--caja);
+}
+.tira:hover { color: var(--tinta); }
+.tira.puesta { background: var(--tinta); color: var(--papel); border-color: var(--tinta); }
+
+.lista { border: 1px solid var(--borde); border-radius: 10px; overflow: hidden; background: var(--caja); }
+.fila-tema { display: flex; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--borde); text-decoration: none; color: var(--tinta); }
+.fila-tema:last-child { border-bottom: 0; }
+.fila-tema:hover { background: var(--codigo-fondo); }
+.fila-tema .medio { flex: 1; min-width: 0; }
+.fila-tema .titulo { font-weight: 600; margin: 0 0 3px; }
+.fila-tema .pie { font-size: 13.5px; color: var(--suave); }
+.fila-tema .cuantos { text-align: center; flex: none; width: 54px; color: var(--suave); font-size: 13px; }
+.fila-tema .cuantos b { display: block; font-size: 17px; color: var(--tinta); font-family: var(--serif); }
+.etiqueta { font-size: 12px; color: var(--tierra); }
+.chapa {
+  font-size: 11px; letter-spacing: .04em; text-transform: uppercase;
+  border: 1px solid var(--tierra); color: var(--tierra);
+  border-radius: 4px; padding: 1px 5px; vertical-align: 1px;
+}
+
+.paso { display: flex; margin-top: 16px; }
+.paso a { text-decoration: none; }
+.vacio { padding: 40px 20px; text-align: center; color: var(--suave); }
+.vacio p { max-width: 30em; margin: 6px auto; }
+
+.mensaje { border: 1px solid var(--borde); border-radius: 10px; background: var(--caja); padding: 16px 18px; margin-bottom: 12px; }
+.mensaje .quien { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; margin-bottom: 8px; font-size: 14px; }
+.mensaje .quien a { font-weight: 600; text-decoration: none; }
+.mensaje .quien .cuando { color: var(--suave); font-size: 13px; }
+.mensaje .cuerpo { white-space: pre-wrap; word-break: break-word; text-wrap: pretty; }
+.mensaje .cuerpo pre {
+  background: var(--codigo-fondo); border: 1px solid var(--borde); border-radius: 8px;
+  padding: 12px 14px; overflow-x: auto; font-size: 14px; white-space: pre; margin: 10px 0;
+}
+.mensaje .abajo { display: flex; gap: 12px; align-items: center; margin-top: 12px; font-size: 13.5px; }
+.mensaje.borrado { color: var(--suave); font-style: italic; }
+.mensaje.primero { border-left: 3px solid var(--tierra); }
+.util { background: none; border: 1px solid var(--borde); border-radius: 20px; padding: 3px 11px; font-size: 13px; color: var(--suave); }
+.util.puesto { color: var(--verde); border-color: var(--verde); }
+.util.quieto { cursor: default; border-style: dashed; }
+.borrar { background: none; border: 0; color: var(--suave); font-size: 13px; padding: 0; text-decoration: underline; }
+
+.escribir { border: 1px solid var(--borde); border-radius: 10px; background: var(--caja); padding: 16px 18px; margin-top: 20px; }
+.escribir h3 { margin: 0 0 12px; font-size: 17px; font-family: var(--sans); }
+.escribir textarea, .escribir input, .escribir select {
+  width: 100%; padding: 11px 12px; border: 1px solid var(--borde); border-radius: 7px;
+  background: var(--papel); color: var(--tinta); font-size: 15px; margin-bottom: 10px;
+}
+.escribir textarea { min-height: 130px; resize: vertical; line-height: 1.55; }
+.escribir input, .escribir select { font-family: var(--sans); }
+.escribir textarea:focus, .escribir input:focus { outline: 2px solid var(--azul); outline-offset: -1px; }
+.escribir .abajo { display: flex; gap: 10px; align-items: center; }
+.escribir .cuenta-letras { margin-left: auto; font-size: 13px; color: var(--suave); }
+.aviso {
+  border: 1px solid var(--borde); border-left: 3px solid var(--tierra); border-radius: 0 8px 8px 0;
+  background: var(--caja); padding: 14px 16px; margin-top: 20px; font-size: 14.5px;
+}
+.aviso b { display: block; margin-bottom: 4px; }
+.error-caja {
+  color: var(--tierra); font-size: 14px; margin: 10px 0 0; padding: 9px 12px;
+  background: color-mix(in srgb, var(--tierra) 9%, transparent);
+  border-radius: 7px; border: 1px solid color-mix(in srgb, var(--tierra) 28%, transparent);
+}
+
+/* Perfil */
+.perfil-cabeza { display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; margin-bottom: 6px; }
+.perfil-cabeza h1 { font-size: 30px; margin: 0; }
+.perfil-desde { color: var(--suave); font-size: 14.5px; margin: 0 0 22px; }
+.numeros { display: flex; gap: 30px; margin-bottom: 26px; }
+.numeros b { display: block; font-family: var(--serif); font-size: 25px; line-height: 1; }
+.numeros span { font-size: 13px; color: var(--suave); }
+.marcas { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 10px; margin-bottom: 30px; }
+.marca-caja { border: 1px solid var(--borde); border-radius: 9px; background: var(--caja); padding: 12px 14px; }
+.marca-caja b { display: block; font-size: 14.5px; }
+.marca-caja span { font-size: 13px; color: var(--suave); }
+.marca-caja i { display: block; font-size: 12px; color: var(--suave); font-style: normal; margin-top: 5px; }
+h2.seccion { font-size: 19px; margin: 26px 0 10px; }
+.mini { border: 1px solid var(--borde); border-radius: 9px; background: var(--caja); padding: 11px 14px; margin-bottom: 8px; }
+.mini a { text-decoration: none; font-weight: 600; }
+.mini p { margin: 4px 0 0; font-size: 14px; color: var(--suave); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="fila">
+    <a class="marca" href="https://fal-lang.org">Fal<span>.</span></a>
+    <span class="migas">Foro</span>
+    <div class="derecha">
+      <a href="/">El curso</a>
+      <a class="opcional" href="https://fal-lang.org/manual.html">Manual</a>
+      <a class="opcional" href="https://fal-lang.org/probar.html">Probar</a>
+      <span id="zonaCuenta"></span>
+    </div>
+  </div>
+</nav>
+
+<main id="donde">
+  <p class="vacio">Cargando…</p>
+</main>
+
+<script type="module">
+import { cuenta, API } from "./cuenta.js";
+
+const $ = (id) => document.getElementById(id);
+const donde = $("donde");
+let yo = null;
+let categorias = [];
+// Hasta qué número de cuenta se es fundador. Lo dice el servidor al pedir
+// las categorías, para no tener el número escrito en dos sitios y que un
+// día dejen de coincidir.
+let fundadores = 0;
+
+// --- Cosas de pintar -----------------------------------------------------
+
+// Todo lo que escribe una persona pasa por aquí antes de tocar la página.
+// Es la única defensa que hace falta contra que alguien meta etiquetas en un
+// mensaje, y por eso no se usa innerHTML con nada que venga del servidor.
+function texto(nodo, contenido) {
+  nodo.textContent = contenido;
+  return nodo;
+}
+
+function crear(etiqueta, clase, contenido) {
+  const e = document.createElement(etiqueta);
+  if (clase) e.className = clase;
+  if (contenido !== undefined) e.textContent = contenido;
+  return e;
+}
+
+// El cuerpo de un mensaje se pinta como texto, salvo los trozos entre tres
+// comillas invertidas, que salen en un bloque de código. Es lo único de
+// formato que se admite: quien viene a preguntar por qué no le compila algo
+// pega código, y verlo en una fuente de ancho fijo es la diferencia entre
+// entenderlo y no.
+function pintarCuerpo(caja, cuerpo) {
+  const trozos = String(cuerpo).split(/```/);
+  trozos.forEach((trozo, i) => {
+    if (i % 2 === 1) {
+      caja.appendChild(crear("pre", null, trozo.replace(/^\n/, "").replace(/\s+$/, "")));
+      return;
+    }
+    // Los saltos de línea que quedan pegados a un bloque de código sobran.
+    // El bloque ya trae su propia separación, y dejarlos abre a cada lado un
+    // hueco del tamaño de un párrafo en blanco, que es justo lo que se ve al
+    // pegar un programa como lo pega todo el mundo: con una línea vacía
+    // antes y otra después.
+    let texto = trozo;
+    if (i > 0) texto = texto.replace(/^\n+/, "");
+    if (i < trozos.length - 1) texto = texto.replace(/\n+$/, "");
+    if (texto !== "") caja.appendChild(document.createTextNode(texto));
+  });
+}
+
+function cuando(marca) {
+  const segundos = Math.floor((Date.now() - marca) / 1000);
+  if (segundos < 60) return "ahora mismo";
+  if (segundos < 3600) return "hace " + Math.floor(segundos / 60) + " min";
+  if (segundos < 86400) {
+    const h = Math.floor(segundos / 3600);
+    return "hace " + h + (h === 1 ? " hora" : " horas");
+  }
+  const dias = Math.floor(segundos / 86400);
+  if (dias < 30) return "hace " + dias + (dias === 1 ? " día" : " días");
+  return new Date(marca).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+}
+
+async function pedir(camino, opciones) {
+  const r = await fetch(API + camino, {
+    ...opciones,
+    credentials: "include",
+    headers: { "content-type": "application/json", ...(opciones && opciones.headers) },
+  });
+  const cuerpo = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const fallo = new Error(cuerpo.error || "No se ha podido hablar con el foro.");
+    fallo.estado = r.status;
+    fallo.faltan = cuerpo.faltan;
+    throw fallo;
+  }
+  return cuerpo;
+}
+
+// La chapa de fundador va al lado del nombre en todas partes, y no solo en
+// el perfil: enterarse de que alguien estuvo desde el principio no debería
+// costar una visita a otra página.
+function chapaFundador(autorId) {
+  if (!fundadores || !(autorId > 0 && autorId <= fundadores)) return null;
+  const chapa = crear("span", "chapa", "beta");
+  chapa.title = "De las " + fundadores + " primeras cuentas.";
+  return chapa;
+}
+
+// --- Las cuatro vistas ---------------------------------------------------
+
+async function pintarLista(categoria, pagina) {
+  donde.innerHTML = "";
+  const cabecera = crear("div", "cabecera-foro");
+  cabecera.appendChild(crear("h1", null, "Foro"));
+  const lejos = crear("div", "lejos");
+  const nuevo = crear("button", "btn lleno", "Escribir");
+  nuevo.onclick = () => { location.hash = "#/nuevo"; };
+  lejos.appendChild(nuevo);
+  cabecera.appendChild(lejos);
+  donde.appendChild(cabecera);
+
+  const tiras = crear("div", "tiras");
+  const todas = crear("a", "tira" + (categoria ? "" : " puesta"), "Todo");
+  todas.href = "#/";
+  tiras.appendChild(todas);
+  for (const c of categorias) {
+    const t = crear("a", "tira" + (categoria === c.clave ? " puesta" : ""), c.nombre);
+    t.href = "#/c/" + c.clave;
+    t.title = c.resumen;
+    tiras.appendChild(t);
+  }
+  donde.appendChild(tiras);
+
+  const caja = crear("div", "lista");
+  donde.appendChild(caja);
+
+  const busca = new URLSearchParams();
+  if (categoria) busca.set("categoria", categoria);
+  if (pagina) busca.set("pagina", String(pagina));
+
+  let datos;
+  try {
+    datos = await pedir("/api/foro/temas?" + busca.toString());
+  } catch (e) {
+    caja.appendChild(crear("p", "vacio", e.message));
+    return;
+  }
+
+  if (!datos.temas.length) {
+    const nada = crear("div", "vacio");
+    nada.appendChild(crear("p", null, "Aquí todavía no hay nada."));
+    nada.appendChild(crear("p", null,
+      "Si te has atascado con algo del curso, pregúntalo. Ser el primero en escribir en un foro tiene su gracia."));
+    caja.appendChild(nada);
+    return;
+  }
+
+  for (const t of datos.temas) {
+    const fila = crear("a", "fila-tema");
+    fila.href = "#/t/" + t.id;
+
+    const cuantos = crear("div", "cuantos");
+    cuantos.appendChild(crear("b", null, String(t.mensajes)));
+    cuantos.appendChild(crear("span", null, t.mensajes === 1 ? "mensaje" : "mensajes"));
+    fila.appendChild(cuantos);
+
+    const medio = crear("div", "medio");
+    medio.appendChild(crear("p", "titulo", t.titulo));
+    const pie = crear("p", "pie");
+    pie.appendChild(crear("span", "etiqueta", t.categoriaNombre));
+    pie.appendChild(document.createTextNode(" · lo abrió " + t.autor + " · última respuesta " + cuando(t.movido)));
+    medio.appendChild(pie);
+    fila.appendChild(medio);
+    caja.appendChild(fila);
+  }
+
+  // Anterior y siguiente, y solo cuando hay a dónde ir. Un foro que empieza
+  // no tiene veinticinco temas, y hasta que los tenga estos botones no
+  // aparecen.
+  if (pagina > 0 || datos.hayMas) {
+    const paso = crear("div", "paso");
+    const base = "#/" + (categoria ? "c/" + categoria : "");
+    if (pagina > 0) {
+      const atras = crear("a", "btn gris", "← Más recientes");
+      atras.href = base + (pagina - 1 > 0 ? (categoria ? "/" : "p/") + (pagina - 1) : "");
+      paso.appendChild(atras);
+    }
+    if (datos.hayMas) {
+      const alante = crear("a", "btn gris", "Más antiguos →");
+      alante.href = base + (categoria ? "/" : "p/") + (pagina + 1);
+      alante.style.marginLeft = "auto";
+      paso.appendChild(alante);
+    }
+    donde.appendChild(paso);
+  }
+}
+
+async function pintarTema(id) {
+  donde.innerHTML = "";
+  let datos;
+  try {
+    datos = await pedir("/api/foro/tema/" + id);
+  } catch (e) {
+    donde.appendChild(crear("p", "vacio", e.message));
+    return;
+  }
+
+  const volver = crear("a", null, "← Volver al foro");
+  volver.href = "#/";
+  volver.style.fontSize = "14px";
+  donde.appendChild(volver);
+
+  const h1 = crear("h1", null, datos.tema.titulo);
+  h1.style.margin = "12px 0 4px";
+  h1.style.fontSize = "26px";
+  donde.appendChild(h1);
+
+  const sub = crear("p", null);
+  sub.style.color = "var(--suave)";
+  sub.style.fontSize = "14px";
+  sub.style.margin = "0 0 22px";
+  sub.appendChild(crear("span", "etiqueta", datos.tema.categoriaNombre));
+  sub.appendChild(document.createTextNode(" · " + cuando(datos.tema.creado)));
+  donde.appendChild(sub);
+
+  datos.mensajes.forEach((m, i) => donde.appendChild(pintarMensaje(m, i === 0, id)));
+
+  if (datos.tema.cerrado) {
+    const cerrado = crear("div", "aviso");
+    cerrado.appendChild(crear("b", null, "Este tema está cerrado"));
+    cerrado.appendChild(document.createTextNode("No se pueden escribir más respuestas."));
+    donde.appendChild(cerrado);
+    return;
+  }
+  donde.appendChild(await cajaDeResponder(id));
+}
+
+function pintarMensaje(m, esPrimero, tema) {
+  const caja = crear("div", "mensaje" + (esPrimero ? " primero" : "") + (m.borrado ? " borrado" : ""));
+  if (m.borrado) {
+    caja.appendChild(crear("p", null, "Este mensaje se borró."));
+    return caja;
+  }
+
+  const quien = crear("div", "quien");
+  const enlace = crear("a", null, m.autor);
+  enlace.href = "#/u/" + encodeURIComponent(m.autor);
+  quien.appendChild(enlace);
+  const chapa = chapaFundador(m.autorId);
+  if (chapa) quien.appendChild(chapa);
+  quien.appendChild(crear("span", "cuando", cuando(m.creado)));
+  caja.appendChild(quien);
+
+  const cuerpo = crear("div", "cuerpo");
+  pintarCuerpo(cuerpo, m.cuerpo);
+  caja.appendChild(cuerpo);
+
+  const abajo = crear("div", "abajo");
+  // La primera entrada de un hilo es la pregunta, y marcarla como útil no
+  // significa nada: lo que se marca son las respuestas.
+  //
+  // Quien no ha entrado, y el autor sobre lo suyo, ven el número pero no un
+  // botón. Enseñar algo que se puede pulsar para llevarse un no es peor que
+  // no enseñarlo, y así nadie se encuentra con un aviso del navegador.
+  if (!esPrimero) {
+    const puedeMarcar = yo && yo.usuario !== m.autor;
+    if (puedeMarcar) {
+      const util = crear("button", "util", (m.ayudas ? m.ayudas + " · " : "") + "Me ayudó");
+      util.onclick = async () => {
+        try {
+          const r = await pedir("/api/foro/ayuda", { method: "POST", body: JSON.stringify({ mensaje: m.id }) });
+          util.textContent = r.ayudas + " · Me ayudó";
+          util.classList.add("puesto");
+        } catch (e) { util.textContent = e.message; }
+      };
+      abajo.appendChild(util);
+    } else if (m.ayudas > 0) {
+      const dice = m.ayudas === 1
+        ? "A una persona le ayudó"
+        : "A " + m.ayudas + " personas les ayudó";
+      abajo.appendChild(crear("span", "util quieto", dice));
+    }
+  }
+  if (yo && yo.usuario === m.autor) {
+    const borrar = crear("button", "borrar", "Borrar");
+    borrar.onclick = async () => {
+      if (!confirm("¿Borrar este mensaje?")) return;
+      try {
+        await pedir("/api/foro/ocultar", { method: "POST", body: JSON.stringify({ mensaje: m.id }) });
+        pintarTema(tema);
+      } catch (e) { alert(e.message); }
+    };
+    abajo.appendChild(borrar);
+  }
+  if (abajo.children.length) caja.appendChild(abajo);
+  return caja;
+}
+
+// La caja de responder solo aparece si se puede responder. Si no, dice por
+// qué y qué falta, en vez de dejar escribir para rechazarlo al final.
+async function cajaDeResponder(tema) {
+  const permiso = await pedir("/api/foro/puedo").catch(() => ({ puede: false, motivo: "" }));
+  if (!permiso.puede) return cajaDePermiso(permiso);
+
+  const caja = crear("div", "escribir");
+  caja.appendChild(crear("h3", null, "Responder"));
+  const area = document.createElement("textarea");
+  area.placeholder = "Lo que quieras decir. Para pegar código, ponlo entre tres comillas invertidas.";
+  caja.appendChild(area);
+
+  const abajo = crear("div", "abajo");
+  const enviar = crear("button", "btn lleno", "Responder");
+  abajo.appendChild(enviar);
+  const letras = crear("span", "cuenta-letras", "");
+  abajo.appendChild(letras);
+  caja.appendChild(abajo);
+  area.addEventListener("input", () => { letras.textContent = area.value.length + " / 8000"; });
+
+  enviar.onclick = async () => {
+    enviar.disabled = true;
+    enviar.textContent = "Mandando…";
+    try {
+      await pedir("/api/foro/mensajes", { method: "POST", body: JSON.stringify({ tema, cuerpo: area.value }) });
+      pintarTema(tema);
+    } catch (e) {
+      const error = caja.querySelector(".error-caja") || crear("p", "error-caja");
+      error.textContent = e.message;
+      caja.appendChild(error);
+      enviar.disabled = false;
+      enviar.textContent = "Responder";
+    }
+  };
+  return caja;
+}
+
+function cajaDePermiso(permiso) {
+  const caja = crear("div", "aviso");
+  if (!yo) {
+    caja.appendChild(crear("b", null, "Para escribir hace falta una cuenta"));
+    caja.appendChild(document.createTextNode(
+      "Leer no la pide. Se crea en el curso, sin correo ni nada parecido."));
+    const ir = crear("p", null);
+    const enlace = crear("a", null, "Ir al curso");
+    enlace.href = "/";
+    ir.appendChild(enlace);
+    caja.appendChild(ir);
+    return caja;
+  }
+  caja.appendChild(crear("b", null, "Termina el primer módulo del curso"));
+  caja.appendChild(document.createTextNode(
+    "Son cinco lecciones y es lo que mantiene el foro limpio de programas que " +
+    "escriben solos. A ti te va a costar un rato; a un robot, aprender a programar."));
+  const ir = crear("p", null);
+  const enlace = crear("a", null,
+    permiso.faltan ? "Te faltan " + permiso.faltan + ". Seguir el curso" : "Seguir el curso");
+  enlace.href = "/";
+  ir.appendChild(enlace);
+  caja.appendChild(ir);
+  return caja;
+}
+
+async function pintarNuevo() {
+  donde.innerHTML = "";
+  const volver = crear("a", null, "← Volver al foro");
+  volver.href = "#/";
+  volver.style.fontSize = "14px";
+  donde.appendChild(volver);
+
+  const h1 = crear("h1", null, "Escribir algo nuevo");
+  h1.style.margin = "12px 0 20px";
+  h1.style.fontSize = "26px";
+  donde.appendChild(h1);
+
+  const permiso = await pedir("/api/foro/puedo").catch(() => ({ puede: false }));
+  if (!permiso.puede) { donde.appendChild(cajaDePermiso(permiso)); return; }
+
+  const caja = crear("div", "escribir");
+  const elegir = document.createElement("select");
+  for (const c of categorias) {
+    const o = document.createElement("option");
+    o.value = c.clave;
+    o.textContent = c.nombre + " — " + c.resumen;
+    elegir.appendChild(o);
+  }
+  caja.appendChild(elegir);
+
+  const titulo = document.createElement("input");
+  titulo.placeholder = "Un título que diga de qué va";
+  titulo.maxLength = 120;
+  caja.appendChild(titulo);
+
+  const area = document.createElement("textarea");
+  area.placeholder = "Cuenta lo que pasa. Si es un fallo, pega el programa entre tres comillas invertidas y di qué esperabas que hiciera.";
+  caja.appendChild(area);
+
+  const abajo = crear("div", "abajo");
+  const enviar = crear("button", "btn lleno", "Publicar");
+  abajo.appendChild(enviar);
+  const letras = crear("span", "cuenta-letras", "");
+  abajo.appendChild(letras);
+  caja.appendChild(abajo);
+  area.addEventListener("input", () => { letras.textContent = area.value.length + " / 8000"; });
+
+  enviar.onclick = async () => {
+    enviar.disabled = true;
+    enviar.textContent = "Publicando…";
+    try {
+      const r = await pedir("/api/foro/temas", {
+        method: "POST",
+        body: JSON.stringify({ categoria: elegir.value, titulo: titulo.value, cuerpo: area.value }),
+      });
+      location.hash = "#/t/" + r.tema;
+    } catch (e) {
+      const error = caja.querySelector(".error-caja") || crear("p", "error-caja");
+      error.textContent = e.message;
+      caja.appendChild(error);
+      enviar.disabled = false;
+      enviar.textContent = "Publicar";
+    }
+  };
+  donde.appendChild(caja);
+}
+
+async function pintarPerfil(nombre) {
+  donde.innerHTML = "";
+  let p;
+  try {
+    p = await pedir("/api/foro/perfil/" + encodeURIComponent(nombre));
+  } catch (e) {
+    donde.appendChild(crear("p", "vacio", e.message));
+    return;
+  }
+
+  const volver = crear("a", null, "← Volver al foro");
+  volver.href = "#/";
+  volver.style.fontSize = "14px";
+  donde.appendChild(volver);
+
+  const cabeza = crear("div", "perfil-cabeza");
+  cabeza.style.marginTop = "14px";
+  cabeza.appendChild(crear("h1", null, p.usuario));
+  if (p.fundador) {
+    const chapa = crear("span", "chapa", "beta");
+    chapa.title = "De las primeras cuentas del sitio.";
+    cabeza.appendChild(chapa);
+  }
+  donde.appendChild(cabeza);
+  donde.appendChild(crear("p", "perfil-desde", "Por aquí desde " + cuando(p.desde)));
+
+  const numeros = crear("div", "numeros");
+  const cuentas = [
+    [p.cuentas.temas, "tema abierto", "temas abiertos"],
+    [p.cuentas.mensajes, "mensaje", "mensajes"],
+    [p.cuentas.ayudas, "vez que ayudó", "veces que ayudó"],
+  ];
+  for (const [n, uno, varios] of cuentas) {
+    const d = crear("div");
+    d.appendChild(crear("b", null, String(n)));
+    d.appendChild(crear("span", null, n === 1 ? uno : varios));
+    numeros.appendChild(d);
+  }
+  donde.appendChild(numeros);
+
+  if (p.marcas.length) {
+    donde.appendChild(crear("h2", "seccion", "Marcas"));
+    const rejilla = crear("div", "marcas");
+    for (const m of p.marcas) {
+      const c = crear("div", "marca-caja");
+      c.appendChild(crear("b", null, m.nombre));
+      c.appendChild(crear("span", null, m.resumen));
+      c.appendChild(crear("i", null, "desde " + cuando(m.ganada)));
+      rejilla.appendChild(c);
+    }
+    donde.appendChild(rejilla);
+  }
+
+  if (p.temas.length) {
+    donde.appendChild(crear("h2", "seccion", "Ha abierto"));
+    for (const t of p.temas) {
+      const c = crear("div", "mini");
+      const a = crear("a", null, t.titulo);
+      a.href = "#/t/" + t.id;
+      c.appendChild(a);
+      c.appendChild(crear("p", null, t.categoriaNombre + " · " + cuando(t.creado)));
+      donde.appendChild(c);
+    }
+  }
+
+  if (p.respuestas.length) {
+    donde.appendChild(crear("h2", "seccion", "Ha respondido en"));
+    for (const r of p.respuestas) {
+      const c = crear("div", "mini");
+      const a = crear("a", null, r.titulo);
+      a.href = "#/t/" + r.tema;
+      c.appendChild(a);
+      c.appendChild(crear("p", null, r.cuerpo));
+      donde.appendChild(c);
+    }
+  }
+
+  if (!p.temas.length && !p.respuestas.length) {
+    donde.appendChild(crear("p", "vacio", "Todavía no ha escrito nada por aquí."));
+  }
+}
+
+// --- La cuenta y el reparto ---------------------------------------------
+
+function pintarCuenta() {
+  const zona = $("zonaCuenta");
+  zona.innerHTML = "";
+  if (!yo) {
+    const a = crear("a", null, "Entrar");
+    a.href = "/";
+    a.style.color = "var(--azul)";
+    zona.appendChild(a);
+    return;
+  }
+  const a = crear("a", null, yo.usuario);
+  a.href = "#/u/" + encodeURIComponent(yo.usuario);
+  a.style.color = "var(--tinta)";
+  a.style.fontWeight = "600";
+  zona.appendChild(a);
+}
+
+function repartir() {
+  const ruta = location.hash.replace(/^#/, "") || "/";
+  if (ruta.startsWith("/t/")) return pintarTema(parseInt(ruta.slice(3), 10));
+  if (ruta.startsWith("/u/")) return pintarPerfil(decodeURIComponent(ruta.slice(3)));
+  if (ruta === "/nuevo") return pintarNuevo();
+  // Una categoría puede llevar número de página detrás: /c/dudas/2. Sin
+  // categoría el número va solo: /p/2.
+  if (ruta.startsWith("/c/")) {
+    const partes = ruta.slice(3).split("/");
+    return pintarLista(partes[0], parseInt(partes[1], 10) || 0);
+  }
+  if (ruta.startsWith("/p/")) return pintarLista("", parseInt(ruta.slice(3), 10) || 0);
+  return pintarLista("", 0);
+}
+
+window.addEventListener("hashchange", () => { repartir(); window.scrollTo(0, 0); });
+
+(async () => {
+  const [quien, cats] = await Promise.all([
+    cuenta.quienSoy().catch(() => ({ dentro: false })),
+    pedir("/api/foro/categorias").catch(() => ({ categorias: [] })),
+  ]);
+  yo = quien.dentro ? { usuario: quien.usuario } : null;
+  categorias = cats.categorias;
+  fundadores = cats.fundadores || 0;
+  pintarCuenta();
+  repartir();
+})();
+</script>
+
+</body>
+</html>

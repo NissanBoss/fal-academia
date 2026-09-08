@@ -12,6 +12,7 @@
 
 import {
   marcasDelCurso, apuntarMarcas, marcasDe, puedeEscribir, PARA_ESCRIBIR,
+  FUNDADORES,
 } from "./marcas.js";
 
 const MAX_TITULO = 120;
@@ -46,7 +47,7 @@ async function categorias(entorno) {
   const filas = await entorno.DB.prepare(
     "SELECT clave, nombre, resumen FROM categorias ORDER BY orden"
   ).all();
-  return json({ categorias: filas.results || [] });
+  return json({ categorias: filas.results || [], fundadores: FUNDADORES });
 }
 
 // La lista de temas. Trae ya el nombre de quien lo abrió para no tener que
@@ -139,7 +140,7 @@ async function vaDemasiadoRapido(entorno, alumno) {
   return Date.now() - ultimo.creado < SEGUNDOS_ENTRE_MENSAJES * 1000;
 }
 
-function limpiar(texto, tope) {
+export function limpiar(texto, tope) {
   if (typeof texto !== "string") return "";
   // Se recorre letra a letra y se comparan numeros, sin escribir ningun
   // caracter raro dentro de este archivo. Meter los propios caracteres de
@@ -173,15 +174,15 @@ async function abrirTema(peticion, entorno, quienEs) {
 
   const titulo = limpiar(cuerpo.titulo, MAX_TITULO);
   const texto = limpiar(cuerpo.cuerpo, MAX_CUERPO);
-  if (titulo.length < 5) return json({ error: "el título es demasiado corto" }, 400);
-  if (texto.length < 10) return json({ error: "cuenta un poco más, que así no hay quien ayude" }, 400);
+  if (titulo.length < 5) return json({ error: "El título es demasiado corto. Di en una línea de qué va." }, 400);
+  if (texto.length < 10) return json({ error: "Cuenta un poco más, que así no hay quien ayude." }, 400);
 
   const categoria = await entorno.DB.prepare("SELECT id FROM categorias WHERE clave = ?")
     .bind(String(cuerpo.categoria || "")).first();
-  if (!categoria) return json({ error: "esa categoría no existe" }, 400);
+  if (!categoria) return json({ error: "Esa categoría no existe." }, 400);
 
   if (await vaDemasiadoRapido(entorno, quienEs.id)) {
-    return json({ error: "espera un momento antes de escribir otra vez" }, 429);
+    return json({ error: "Espera un momento antes de escribir otra vez." }, 429);
   }
 
   const ahora = Date.now();
@@ -206,17 +207,17 @@ async function responder(peticion, entorno, quienEs) {
   const tema = parseInt(cuerpo?.tema, 10);
   const texto = limpiar(cuerpo?.cuerpo, MAX_CUERPO);
   if (!Number.isInteger(tema) || texto.length < 2) {
-    return json({ error: "falta el mensaje" }, 400);
+    return json({ error: "Falta el mensaje." }, 400);
   }
 
   const existe = await entorno.DB.prepare(
     "SELECT id, cerrado FROM temas WHERE id = ? AND oculto = 0"
   ).bind(tema).first();
   if (!existe) return json({ error: "ese tema no existe" }, 404);
-  if (existe.cerrado) return json({ error: "este tema está cerrado" }, 403);
+  if (existe.cerrado) return json({ error: "Este tema está cerrado." }, 403);
 
   if (await vaDemasiadoRapido(entorno, quienEs.id)) {
-    return json({ error: "espera un momento antes de escribir otra vez" }, 429);
+    return json({ error: "Espera un momento antes de escribir otra vez." }, 429);
   }
 
   const ahora = Date.now();
@@ -244,7 +245,7 @@ async function marcarAyuda(peticion, entorno, quienEs) {
   if (!quienEs) return json({ error: "entra en tu cuenta" }, 401);
   const cuerpo = await peticion.json().catch(() => null);
   const mensaje = parseInt(cuerpo?.mensaje, 10);
-  if (!Number.isInteger(mensaje)) return json({ error: "falta el mensaje" }, 400);
+  if (!Number.isInteger(mensaje)) return json({ error: "Falta el mensaje." }, 400);
 
   const fila = await entorno.DB.prepare(
     "SELECT id, autor FROM mensajes WHERE id = ? AND oculto = 0"
@@ -304,6 +305,15 @@ async function ocultar(peticion, entorno, quienEs) {
   return json({ error: "no dices qué borrar" }, 400);
 }
 
+// Una línea suelta de un mensaje, para el índice del perfil. Se quitan las
+// comillas que abren un bloque de código y se juntan los saltos de línea:
+// en una sola línea no significan nada y el resumen acaba siendo un montón
+// de símbolos sueltos en vez de una frase que se pueda leer.
+export function resumir(cuerpo) {
+  const plano = cuerpo.split("```").join(" ").replace(/\s+/g, " ").trim();
+  return plano.length > 180 ? plano.slice(0, 180) + "…" : plano;
+}
+
 // El perfil de alguien: sus marcas y por dónde ha andado.
 //
 // No enseña el progreso del curso lección a lección. Las marcas dicen lo que
@@ -324,10 +334,14 @@ async function perfil(ruta, entorno) {
     "WHERE t.autor = ? AND t.oculto = 0 ORDER BY t.creado DESC LIMIT 30"
   ).bind(quien.id).all();
 
+  // Respuestas de verdad, no el mensaje con el que se abre un tema. Ese ya
+  // sale más arriba bajo «ha abierto», y contarlo dos veces hace que un
+  // perfil parezca el doble de activo de lo que es.
   const respuestas = await entorno.DB.prepare(
     "SELECT m.id, m.cuerpo, m.creado, m.ayudas, t.id AS tema, t.titulo " +
     "FROM mensajes m JOIN temas t ON t.id = m.tema " +
     "WHERE m.autor = ? AND m.oculto = 0 AND t.oculto = 0 " +
+    "AND m.id <> (SELECT MIN(id) FROM mensajes WHERE tema = t.id) " +
     "ORDER BY m.creado DESC LIMIT 30"
   ).bind(quien.id).all();
 
@@ -344,10 +358,7 @@ async function perfil(ruta, entorno) {
     marcas: await marcasDe(entorno, quien.id),
     temas: temas.results || [],
     // Las respuestas se recortan: el perfil es un índice, no una relectura.
-    respuestas: (respuestas.results || []).map((r) => ({
-      ...r,
-      cuerpo: r.cuerpo.length > 180 ? r.cuerpo.slice(0, 180) + "…" : r.cuerpo,
-    })),
+    respuestas: (respuestas.results || []).map((r) => ({ ...r, cuerpo: resumir(r.cuerpo) })),
     cuentas: cuentas || { temas: 0, mensajes: 0, ayudas: 0 },
   });
 }
