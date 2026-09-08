@@ -583,7 +583,7 @@ async function pintarNuevo() {
   for (const c of categorias) {
     const o = document.createElement("option");
     o.value = c.clave;
-    o.textContent = c.nombre + " — " + c.resumen;
+    o.textContent = c.nombre + " · " + c.resumen;
     elegir.appendChild(o);
   }
   caja.appendChild(elegir);

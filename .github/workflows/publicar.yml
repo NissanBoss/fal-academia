@@ -74,6 +74,25 @@ jobs:
       - name: El servidor de cuentas no se ha roto
         run: cd api && node pruebas.mjs
 
+      # El guion largo no se usa en este proyecto. Se coló una vez en el
+      # desplegable de categorías del foro y hubo que verlo en una captura
+      # para enterarse, así que ahora lo caza esto en lugar de la memoria de
+      # nadie. El separador de la casa es el punto medio.
+      - name: Aquí no se escribe el guion largo
+        run: |
+          largo=$(printf '\xe2\x80\x94')
+          malos=$(grep -rln "$largo" \
+            --include='*.html' --include='*.js' --include='*.mjs' \
+            --include='*.sql' --include='*.md' --include='*.yml' \
+            --exclude-dir=node_modules --exclude-dir=fal --exclude-dir=foro-publico \
+            . || true)
+          if [ -n "$malos" ]; then
+            echo "Hay guion largo en:"
+            grep -rn "$largo" $malos || true
+            exit 1
+          fi
+          echo "Limpio."
+
       # El curso es una sola página, así que el sitemap es corto. Lleva la
       # fecha del último cambio real del contenido, que es curso.js, y no la
       # del despliegue.
