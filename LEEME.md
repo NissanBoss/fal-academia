@@ -11,11 +11,35 @@ ejercicios que se corrigen solos, desde escribir en pantalla hasta clausuras.
 | `web/index.html` | La academia entera: índice, lección, editor y corrección. |
 | `web/cuenta.js` | El registro y la entrada, por el lado del navegador. |
 | `web/comprobar-curso.mjs` | Pasa todas las soluciones por el intérprete de verdad. |
-| `api/` | El servidor de cuentas, en Cloudflare Pages. Tiene su propio LEEME. |
+| `web/foro.html` | El foro entero: lista, hilo, editor y perfiles. |
+| `api/` | El servidor de cuentas y el foro, en Cloudflare Pages. Tiene su propio LEEME. |
 
 El intérprete no está aquí. Se saca del repositorio de Fal en cada
 publicación y se compila a WebAssembly, así que la academia siempre enseña
 el lenguaje que hay ahora mismo.
+
+## Dos direcciones, un archivo
+
+El curso se publica solo en cada push, a **aprende.fal-lang.org**, por GitHub
+Pages. El foro no: vive en **foro.fal-lang.org**, y eso es Cloudflare Pages,
+porque GitHub Pages admite un único dominio propio por repositorio.
+
+```bash
+sh publicar-foro.sh
+```
+
+Eso arma una carpeta con `web/foro.html` como `index.html` y `web/cuenta.js`
+al lado, y la sube. Hay que ejecutarlo a mano después de tocar el foro: el
+push no lo hace.
+
+El foro sigue estando además en `aprende.fal-lang.org/foro.html`, que es
+donde estuvo primero, para no romper enlaces. Su etiqueta canónica apunta a
+`foro.fal-lang.org`, así que para un buscador solo existe una.
+
+Que el foro comparta carpeta con el curso no es pereza: usa el mismo
+`cuenta.js`. En dos repositorios habría dos copias, y el día que una
+cambiara, el foro dejaría de saber entrar sin que nadie se enterara hasta
+que alguien lo intentara.
 
 ## Añadir una lección
 

@@ -20,7 +20,7 @@ pages_build_output_dir = "publico"
 # Quién puede llamar a este servidor. Cualquier otra página se queda sin
 # respuesta utilizable, y además lo que cambie datos se rechaza de plano.
 [vars]
-ORIGENES = "https://aprende.fal-lang.org,https://fal-lang.org,http://localhost:8099"
+ORIGENES = "https://foro.fal-lang.org,https://aprende.fal-lang.org,https://fal-lang.org,http://localhost:8099"
 
 [[d1_databases]]
 binding = "DB"

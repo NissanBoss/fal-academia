@@ -11,3 +11,7 @@ web/trabajador.js
 api/fal-linux
 api/wrangler.prueba.toml
 web/sitemap.xml
+
+# La carpeta que arma publicar-foro.sh para subirla a Cloudflare. Todo lo
+# que hay dentro sale de web/.
+foro-publico/

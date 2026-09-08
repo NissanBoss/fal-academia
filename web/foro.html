@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Foro de Fal</title>
 <meta name="description" content="Dudas del curso, cosas hechas con Fal e ideas para el lenguaje. Leer no pide cuenta.">
-<link rel="canonical" href="https://aprende.fal-lang.org/foro.html">
+<link rel="canonical" href="https://foro.fal-lang.org/">
+<meta property="og:url" content="https://foro.fal-lang.org/">
 <meta property="og:title" content="Foro de Fal">
 <meta property="og:description" content="Dudas, proyectos e ideas alrededor de un lenguaje de programación en español.">
 <meta property="og:type" content="website">
@@ -154,7 +155,7 @@ h2.seccion { font-size: 19px; margin: 26px 0 10px; }
     <a class="marca" href="https://fal-lang.org">Fal<span>.</span></a>
     <span class="migas">Foro</span>
     <div class="derecha">
-      <a href="/">El curso</a>
+      <a href="https://aprende.fal-lang.org/">El curso</a>
       <a class="opcional" href="https://fal-lang.org/manual.html">Manual</a>
       <a class="opcional" href="https://fal-lang.org/probar.html">Probar</a>
       <span id="zonaCuenta"></span>
@@ -169,6 +170,7 @@ h2.seccion { font-size: 19px; margin: 26px 0 10px; }
 <script type="module">
 import { cuenta, API } from "./cuenta.js";
 
+const ACADEMIA = "https://aprende.fal-lang.org/";
 const $ = (id) => document.getElementById(id);
 const donde = $("donde");
 let yo = null;
@@ -493,7 +495,7 @@ function cajaDePermiso(permiso) {
       "Leer no la pide. Se crea en el curso, sin correo ni nada parecido."));
     const ir = crear("p", null);
     const enlace = crear("a", null, "Ir al curso");
-    enlace.href = "/";
+    enlace.href = ACADEMIA;
     ir.appendChild(enlace);
     caja.appendChild(ir);
     return caja;
@@ -505,7 +507,7 @@ function cajaDePermiso(permiso) {
   const ir = crear("p", null);
   const enlace = crear("a", null,
     permiso.faltan ? "Te faltan " + permiso.faltan + ". Seguir el curso" : "Seguir el curso");
-  enlace.href = "/";
+  enlace.href = ACADEMIA;
   ir.appendChild(enlace);
   caja.appendChild(ir);
   return caja;
@@ -662,7 +664,7 @@ function pintarCuenta() {
   zona.innerHTML = "";
   if (!yo) {
     const a = crear("a", null, "Entrar");
-    a.href = "/";
+    a.href = ACADEMIA;
     a.style.color = "var(--azul)";
     zona.appendChild(a);
     return;
