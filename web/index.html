@@ -49,6 +49,19 @@
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+
+/* Las barras de desplazamiento vienen del sistema y en modo oscuro salen
+   blancas. Con un índice lateral que siempre tiene barra, es lo primero
+   que se ve de la página. */
+* { scrollbar-width: thin; scrollbar-color: var(--borde) transparent; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--borde); border-radius: 6px; border: 3px solid var(--papel);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--suave); }
+::-webkit-scrollbar-corner { background: transparent; }
+
 body { margin: 0; background: var(--papel); color: var(--tinta); font: 16px/1.6 var(--sans); }
 h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.25; }
 a { color: var(--azul); }
@@ -90,7 +103,8 @@ aside li a .marca-hecha { color: var(--verde); width: 12px; flex: none; }
 main { padding: 26px 28px 60px; max-width: 900px; }
 .leccion h1 { font-size: 27px; margin: 0 0 4px; }
 .donde { color: var(--suave); font-size: 14px; margin: 0 0 20px; }
-.cuerpo p { max-width: 40em; }
+.cuerpo p { max-width: 40em; text-wrap: pretty; }
+.leccion h1, .donde { text-wrap: balance; }
 .cuerpo pre {
   background: var(--codigo-fondo); border: 1px solid var(--borde); border-radius: 8px;
   padding: 13px 15px; overflow-x: auto; font-size: 14px; line-height: 1.5;
