@@ -297,12 +297,45 @@ async function rescatar(peticion, entorno) {
 
 // Que alguien pueda borrarse entero, sin pedirlo por escrito a nadie. Es lo
 // justo y ademas es lo que evita tener que atender solicitudes a mano.
+// Borrar la cuenta. De verdad, no marcarla como inactiva.
+//
+// Esto se escribio cuando no habia foro, y se quedo borrando tres tablas de
+// las nueve que acabaron apuntando a una cuenta. Con las claves ajenas
+// activas, eso no dejaba una cuenta a medio borrar: hacia que la fila de
+// alumnos no se pudiera borrar en absoluto, asi que cualquiera con una
+// marca (o sea, cualquiera que hubiera guardado progreso) se encontraba con
+// un error al pedir que le borraran los datos.
 async function borrarme(peticion, entorno) {
   const alumno = await deLaSesion(peticion, entorno);
   if (!alumno) return responder({ error: "no has entrado" }, 401);
+  const llave = alumno.usuario.toLowerCase();
+
   await entorno.DB.batch([
+    // Antes de quitar sus votos, devolver la cuenta a los mensajes que
+    // habia marcado, o el numero se queda inflado para siempre.
+    entorno.DB.prepare(
+      "UPDATE mensajes SET ayudas = ayudas - 1 " +
+      "WHERE id IN (SELECT mensaje FROM ayudas WHERE alumno = ?)"
+    ).bind(alumno.id),
+    entorno.DB.prepare("DELETE FROM ayudas WHERE alumno = ?").bind(alumno.id),
+
+    // Lo que escribio en el foro: el texto se vacia de verdad y el mensaje
+    // queda como borrado. Lo que no se hace es quitar la fila, porque un
+    // hilo al que le faltan las preguntas son diez respuestas sin sentido.
+    // El titulo del tema si se queda, para que la conversacion conserve su
+    // forma; quien quiera que desaparezca tambien, lo pide y se quita.
+    entorno.DB.prepare(
+      "UPDATE mensajes SET cuerpo = '', oculto = 1, autor = 0 WHERE autor = ?"
+    ).bind(alumno.id),
+    entorno.DB.prepare("UPDATE temas SET autor = 0 WHERE autor = ?").bind(alumno.id),
+
+    entorno.DB.prepare("DELETE FROM marcas WHERE alumno = ?").bind(alumno.id),
+    entorno.DB.prepare("DELETE FROM moderadores WHERE alumno = ?").bind(alumno.id),
     entorno.DB.prepare("DELETE FROM progreso WHERE alumno = ?").bind(alumno.id),
     entorno.DB.prepare("DELETE FROM sesiones WHERE alumno = ?").bind(alumno.id),
+    // Esta va por nombre y no por numero, que es justo por lo que se
+    // quedaba sin borrar.
+    entorno.DB.prepare("DELETE FROM fallos WHERE quien = ?").bind(llave),
     entorno.DB.prepare("DELETE FROM alumnos WHERE id = ?").bind(alumno.id),
   ]);
   return responder({ hecho: true }, 200, null, {
