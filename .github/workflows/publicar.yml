@@ -113,6 +113,14 @@ jobs:
           sed -i 's/^          //' web/sitemap.xml
           cat web/sitemap.xml
 
+      # La política de contenidos, con el hash de cada script de dentro. Se
+      # pone sobre la copia que se sube y no sobre el archivo que se edita,
+      # porque un hash escrito en el fuente se queda viejo en cuanto alguien
+      # toca una línea, y entonces la página deja de funcionar sin decir por
+      # qué.
+      - name: Poner la política de contenidos
+        run: cd web && node poner-politica.mjs index.html foro.html
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

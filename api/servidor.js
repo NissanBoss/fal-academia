@@ -51,7 +51,7 @@ const MINUTOS_CASTIGO = 15;
 export async function manejar(peticion, entorno) {
   const origen = permitido(peticion, entorno);
   if (peticion.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: cabeceras(origen) });
+    return new Response(null, { status: 204, headers: { ...SEGURIDAD, ...cabeceras(origen) } });
   }
 
   // Nada que cambie algo se acepta desde una página que no sea la academia.
@@ -64,7 +64,10 @@ export async function manejar(peticion, entorno) {
   const ruta = new URL(peticion.url).pathname.replace(/\/+$/, "");
   try {
     const respuesta = await repartir(ruta, peticion, entorno);
-    for (const [k, v] of Object.entries(cabeceras(origen))) {
+    // Las del foro se construyen en foro.js y no pasan por responder(), así
+    // que las cabeceras de seguridad hay que ponérselas aquí o se irían sin
+    // ellas. Es el punto por el que sale todo, sin excepción.
+    for (const [k, v] of Object.entries({ ...SEGURIDAD, ...cabeceras(origen) })) {
       respuesta.headers.set(k, v);
     }
     return respuesta;
@@ -135,9 +138,36 @@ function cabeceras(origen) {
   };
 }
 
+// Lo que se le dice al navegador sobre cada respuesta de este servidor.
+//
+// Aquí no sale nunca una página, solo JSON, así que se puede cerrar del
+// todo: ni scripts, ni marcos, ni que nadie meta esto dentro de un iframe
+// para engañar a quien pulsa. Y sin caché en ninguna parte, porque por aquí
+// pasa quién eres y una respuesta guardada en un proxy es la respuesta de
+// otro.
+const SEGURIDAD = {
+  // Este servidor no devuelve nada que un navegador deba ejecutar ni
+  // enseñar. La política más cerrada posible es la correcta.
+  "Content-Security-Policy":
+    "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+  // Que no adivine el tipo de contenido: si digo que es JSON, es JSON, y no
+  // algo que decide tratar como HTML porque el principio se lo parece.
+  "X-Content-Type-Options": "nosniff",
+  // La dirección de esta página no viaja a ningún sitio al salir de aquí.
+  "Referrer-Policy": "no-referrer",
+  // Ni cámara, ni micrófono, ni ubicación, ni nada. No se usan.
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+  "X-Frame-Options": "DENY",
+  // Dos años, subdominios incluidos: una vez que un navegador ha estado
+  // aquí, no vuelve a intentarlo sin cifrar aunque le den un enlace http.
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+  "Cache-Control": "no-store",
+};
+
 function responder(cuerpo, estado, origen, extra) {
   const h = {
     "content-type": "application/json; charset=utf-8",
+    ...SEGURIDAD,
     ...cabeceras(origen || ""),
   };
   if (extra) Object.assign(h, extra);

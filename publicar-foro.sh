@@ -39,4 +39,26 @@ cat > foro-publico/sitemap.xml <<FIN
 </urlset>
 FIN
 
+# Las cabeceras de seguridad. Cloudflare Pages las lee de este archivo y las
+# manda con cada respuesta, cosa que GitHub Pages no sabe hacer: por eso la
+# copia del foro que vive en la academia se tiene que conformar con la
+# etiqueta meta, que no admite frame-ancestors.
+#
+# La politica de contenidos se calcula del archivo de verdad, con el hash
+# del script que lleva dentro, para no tener que abrir la mano con
+# unsafe-inline.
+politica=$(node web/cabeceras.mjs foro-publico/index.html)
+
+cat > foro-publico/_headers <<FIN
+/*
+  Content-Security-Policy: $politica
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+FIN
+
 npx wrangler pages deploy foro-publico --project-name fal-foro --commit-dirty=true

@@ -202,6 +202,14 @@ dialog .error {
   border-radius: 0 8px 8px 0; padding: 12px 14px; font-size: 13.5px; margin: 0 0 4px;
 }
 dialog .cargando { opacity: .6; pointer-events: none; }
+
+footer.legal {
+  border-top: 1px solid var(--borde); margin-top: 40px;
+  padding: 22px 20px 40px; font-size: 13.5px; color: var(--suave);
+}
+footer.legal div { max-width: 1000px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap; }
+footer.legal a { color: var(--suave); text-decoration: none; }
+footer.legal a:hover { color: var(--tinta); text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -889,6 +897,16 @@ cuenta.quienSoy().then((r) => {
   if (r.dentro) sincronizar();
 });
 </script>
+
+
+<footer class="legal">
+  <div>
+    <a href="https://fal-lang.org/aviso-legal.html">Aviso legal</a>
+    <a href="https://fal-lang.org/privacidad.html">Privacidad</a>
+    <a href="https://fal-lang.org/cookies.html">Cookies</a>
+    <a href="https://github.com/NissanBoss/Fal">Codigo</a>
+  </div>
+</footer>
 
 </body>
 </html>
