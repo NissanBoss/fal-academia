@@ -74,6 +74,21 @@ jobs:
       - name: El servidor de cuentas no se ha roto
         run: cd api && node pruebas.mjs
 
+      # El curso es una sola página, así que el sitemap es corto. Lleva la
+      # fecha del último cambio real del contenido, que es curso.js, y no la
+      # del despliegue.
+      - name: Hacer el sitemap
+        run: |
+          fecha=$(git log -1 --format=%cs -- web/curso.js 2>/dev/null || date -I)
+          cat > web/sitemap.xml <<XML
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <url><loc>https://aprende.fal-lang.org/</loc><lastmod>$fecha</lastmod><priority>1.0</priority></url>
+          </urlset>
+          XML
+          sed -i 's/^          //' web/sitemap.xml
+          cat web/sitemap.xml
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

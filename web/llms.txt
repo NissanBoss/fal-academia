@@ -1,0 +1,13 @@
+# Academia de Fal
+
+> Un curso de programación en español, de cero a objetos y clausuras. Treinta y dos lecciones en siete módulos, cada una con un ejercicio que se corrige solo dentro del navegador. No hace falta instalar nada y se puede seguir sin cuenta.
+
+El lenguaje que se enseña es Fal, que está escrito entero en español y sin símbolos. El intérprete corre dentro de la propia página, compilado a WebAssembly, así que el código del alumno no sale de su máquina.
+
+Los siete módulos, en orden: primeros pasos, decidir y repetir, listas y diccionarios, funciones, objetos, cuando algo falla, y un último de repaso con listas de golpe, textos, clausuras y dibujo con tortuga.
+
+## Enlaces
+
+- [El curso](https://aprende.fal-lang.org/): las 32 lecciones.
+- [Manual de Fal](https://fal-lang.org/manual.html): la referencia completa del lenguaje, para consultar mientras se hace el curso.
+- [Qué es Fal](https://fal-lang.org/): para quién es el lenguaje y por qué existe.

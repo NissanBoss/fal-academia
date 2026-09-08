@@ -1,0 +1,6 @@
+# El curso es público entero y se puede leer sin cuenta.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://aprende.fal-lang.org/sitemap.xml
