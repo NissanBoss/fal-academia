@@ -31,6 +31,7 @@ export async function repartirForo(ruta, peticion, entorno, quienEs) {
   if (ruta === "/api/foro/mensajes" && metodo === "POST") return responder(peticion, entorno, quienEs);
   if (ruta === "/api/foro/ayuda" && metodo === "POST") return marcarAyuda(peticion, entorno, quienEs);
   if (ruta === "/api/foro/ocultar" && metodo === "POST") return ocultar(peticion, entorno, quienEs);
+  if (ruta === "/api/foro/cerrar" && metodo === "POST") return cerrarTema(peticion, entorno, quienEs);
   if (ruta.startsWith("/api/foro/perfil/") && metodo === "GET") return perfil(ruta, entorno);
   if (ruta === "/api/foro/puedo" && metodo === "GET") return puedoEscribir(entorno, quienEs);
   return null;
@@ -126,7 +127,37 @@ async function quienPuede(entorno, quienEs) {
 
 async function puedoEscribir(entorno, quienEs) {
   const r = await quienPuede(entorno, quienEs);
-  return json({ puede: r.puede, motivo: r.motivo || "", faltan: r.faltan || 0 });
+  return json({
+    puede: r.puede,
+    motivo: r.motivo || "",
+    faltan: r.faltan || 0,
+    // Para que la página sepa si enseñar los botones de moderar. Decirlo
+    // aquí no da permiso: cada cosa se vuelve a comprobar al hacerla, así
+    // que decir que sí desde el navegador no sirve de nada.
+    modera: await esModerador(entorno, quienEs),
+  });
+}
+
+// Cerrar un tema y volver a abrirlo. Solo modera quien modera.
+//
+// Un tema cerrado se sigue leyendo entero; lo único que no admite es
+// respuestas nuevas. Es lo que hace falta cuando un hilo se ha ido de las
+// manos y borrarlo seria tirar lo que si servia.
+async function cerrarTema(peticion, entorno, quienEs) {
+  if (!quienEs) return json({ error: "entra en tu cuenta" }, 401);
+  if (!(await esModerador(entorno, quienEs))) return json({ error: "eso no lo puedes hacer" }, 403);
+
+  const cuerpo = await peticion.json().catch(() => null);
+  const id = parseInt(cuerpo?.tema, 10);
+  if (!Number.isInteger(id)) return json({ error: "no dices qué tema" }, 400);
+  const cerrado = cuerpo?.cerrado === false ? 0 : 1;
+
+  const fila = await entorno.DB.prepare("SELECT id FROM temas WHERE id = ? AND oculto = 0")
+    .bind(id).first();
+  if (!fila) return json({ error: "ese tema no existe" }, 404);
+
+  await entorno.DB.prepare("UPDATE temas SET cerrado = ? WHERE id = ?").bind(cerrado, id).run();
+  return json({ cerrado: !!cerrado });
 }
 
 // Un tope de tiempo entre mensajes. No es contra las personas: es contra la

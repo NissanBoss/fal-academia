@@ -86,6 +86,10 @@ main { max-width: 1000px; margin: 0 auto; padding: 26px 20px 80px; }
   border-radius: 4px; padding: 1px 5px; vertical-align: 1px;
 }
 
+.moderar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  font-size: 13px; color: var(--suave); margin: 0 0 16px;
+}
 .paso { display: flex; margin-top: 16px; }
 .paso a { text-decoration: none; }
 .vacio { padding: 40px 20px; text-align: center; color: var(--suave); }
@@ -352,8 +356,14 @@ async function pintarLista(categoria, pagina) {
 async function pintarTema(id) {
   donde.innerHTML = "";
   let datos;
+  let permiso;
   try {
-    datos = await pedir("/api/foro/tema/" + id);
+    // Los dos a la vez: el permiso hace falta para pintar los mensajes, no
+    // solo para saber si va la caja de responder al final.
+    [datos, permiso] = await Promise.all([
+      pedir("/api/foro/tema/" + id),
+      pedir("/api/foro/puedo").catch(() => ({ puede: false, motivo: "" })),
+    ]);
   } catch (e) {
     donde.appendChild(crear("p", "vacio", e.message));
     return;
@@ -377,7 +387,10 @@ async function pintarTema(id) {
   sub.appendChild(document.createTextNode(" · " + cuando(datos.tema.creado)));
   donde.appendChild(sub);
 
-  datos.mensajes.forEach((m, i) => donde.appendChild(pintarMensaje(m, i === 0, id)));
+  if (permiso.modera) donde.appendChild(botonesDeModerar(datos.tema));
+
+  datos.mensajes.forEach((m, i) =>
+    donde.appendChild(pintarMensaje(m, i === 0, id, permiso.modera)));
 
   if (datos.tema.cerrado) {
     const cerrado = crear("div", "aviso");
@@ -386,10 +399,47 @@ async function pintarTema(id) {
     donde.appendChild(cerrado);
     return;
   }
-  donde.appendChild(await cajaDeResponder(id));
+  donde.appendChild(cajaDeResponder(id, permiso));
 }
 
-function pintarMensaje(m, esPrimero, tema) {
+// La fila de moderar, que solo ve quien modera. Va arriba del todo y en gris:
+// son botones para cuando algo va mal, no para usarlos cada dia.
+function botonesDeModerar(tema) {
+  const fila = crear("div", "moderar");
+  fila.appendChild(crear("span", null, "Moderar:"));
+
+  const cerrar = crear("button", "btn gris pequeno",
+    tema.cerrado ? "Reabrir el tema" : "Cerrar el tema");
+  cerrar.onclick = async () => {
+    cerrar.disabled = true;
+    try {
+      await pedir("/api/foro/cerrar", {
+        method: "POST",
+        body: JSON.stringify({ tema: tema.id, cerrado: !tema.cerrado }),
+      });
+      pintarTema(tema.id);
+    } catch (e) {
+      cerrar.disabled = false;
+      cerrar.textContent = e.message;
+    }
+  };
+  fila.appendChild(cerrar);
+
+  const quitar = crear("button", "btn gris pequeno", "Quitar el tema entero");
+  quitar.onclick = async () => {
+    if (!confirm("¿Quitar este tema y todo lo que hay dentro?")) return;
+    try {
+      await pedir("/api/foro/ocultar", {
+        method: "POST", body: JSON.stringify({ tema: tema.id }),
+      });
+      location.hash = "#/";
+    } catch (e) { quitar.textContent = e.message; }
+  };
+  fila.appendChild(quitar);
+  return fila;
+}
+
+function pintarMensaje(m, esPrimero, tema, modera) {
   const caja = crear("div", "mensaje" + (esPrimero ? " primero" : "") + (m.borrado ? " borrado" : ""));
   if (m.borrado) {
     caja.appendChild(crear("p", null, "Este mensaje se borró."));
@@ -435,10 +485,11 @@ function pintarMensaje(m, esPrimero, tema) {
       abajo.appendChild(crear("span", "util quieto", dice));
     }
   }
-  if (yo && yo.usuario === m.autor) {
-    const borrar = crear("button", "borrar", "Borrar");
+  const esMio = yo && yo.usuario === m.autor;
+  if (esMio || modera) {
+    const borrar = crear("button", "borrar", esMio ? "Borrar" : "Quitar");
     borrar.onclick = async () => {
-      if (!confirm("¿Borrar este mensaje?")) return;
+      if (!confirm(esMio ? "¿Borrar este mensaje?" : "¿Quitar este mensaje?")) return;
       try {
         await pedir("/api/foro/ocultar", { method: "POST", body: JSON.stringify({ mensaje: m.id }) });
         pintarTema(tema);
@@ -452,8 +503,7 @@ function pintarMensaje(m, esPrimero, tema) {
 
 // La caja de responder solo aparece si se puede responder. Si no, dice por
 // qué y qué falta, en vez de dejar escribir para rechazarlo al final.
-async function cajaDeResponder(tema) {
-  const permiso = await pedir("/api/foro/puedo").catch(() => ({ puede: false, motivo: "" }));
+function cajaDeResponder(tema, permiso) {
   if (!permiso.puede) return cajaDePermiso(permiso);
 
   const caja = crear("div", "escribir");
