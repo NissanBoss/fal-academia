@@ -85,6 +85,9 @@ main { max-width: 1000px; margin: 0 auto; padding: 26px 20px 80px; }
   border: 1px solid var(--tierra); color: var(--tierra);
   border-radius: 4px; padding: 1px 5px; vertical-align: 1px;
 }
+/* La de moderar no compite con la de fundador: una dice quien llego pronto
+   y la otra es un cargo. */
+.chapa.apagada { border-color: var(--borde); color: var(--suave); }
 
 .moderar {
   display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
@@ -646,6 +649,11 @@ async function pintarPerfil(nombre) {
   if (p.fundador) {
     const chapa = crear("span", "chapa", "beta");
     chapa.title = "De las primeras cuentas del sitio.";
+    cabeza.appendChild(chapa);
+  }
+  if (p.modera) {
+    const chapa = crear("span", "chapa apagada", "modera");
+    chapa.title = "Puede cerrar temas y quitar mensajes.";
     cabeza.appendChild(chapa);
   }
   donde.appendChild(cabeza);

@@ -382,10 +382,17 @@ async function perfil(ruta, entorno) {
     "       (SELECT COALESCE(SUM(ayudas), 0) FROM mensajes WHERE autor = ? AND oculto = 0) AS ayudas"
   ).bind(quien.id, quien.id, quien.id).first();
 
+  // Quién modera se dice en su perfil y a la vista de todos. Es lo normal en
+  // un foro: quien puede quitar lo que escribes debería ser alguien con
+  // nombre, no una mano anónima, y así se sabe a quién preguntar.
+  const modera = await entorno.DB.prepare("SELECT alumno FROM moderadores WHERE alumno = ?")
+    .bind(quien.id).first();
+
   return json({
     usuario: quien.usuario,
     desde: quien.creado,
-    fundador: quien.id <= 100,
+    fundador: quien.id <= FUNDADORES,
+    modera: !!modera,
     marcas: await marcasDe(entorno, quien.id),
     temas: temas.results || [],
     // Las respuestas se recortan: el perfil es un índice, no una relectura.
