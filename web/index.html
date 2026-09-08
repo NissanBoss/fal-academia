@@ -353,6 +353,9 @@ const $veredicto = $("veredicto");
 let actual = 0;
 let hechas = new Set();
 let borradores = {};
+// En qué lecciones se pulsó «ver la solución». Sirve para la marca de
+// haberlo sacado por tu cuenta, y por eso se apunta aquí y no se pregunta.
+let mirados = new Set();
 let dentro = false;
 
 // --- Guardar el progreso -------------------------------------------------
@@ -369,12 +372,13 @@ function leerLocal() {
     if (!g) return;
     hechas = new Set(g.hechas || []);
     borradores = g.borradores || {};
+    mirados = new Set(g.mirados || []);
     if (Number.isInteger(g.actual) && g.actual < LECCIONES.length) actual = g.actual;
   } catch (e) {}
 }
 
 function comoObjeto() {
-  return { hechas: [...hechas].sort((a, b) => a - b), actual, borradores };
+  return { hechas: [...hechas].sort((a, b) => a - b), actual, borradores, mirados: [...mirados] };
 }
 
 let esperando = null;
@@ -853,6 +857,7 @@ $("pista").onclick = () => {
   if (!l.solucion) return;
   $programa.value = l.solucion;
   borradores[actual] = l.solucion;
+  mirados.add(actual);
   guardar();
   $("pista").textContent = "Ahí la tienes";
 };

@@ -30,6 +30,8 @@ import {
   VUELTAS_CLIENTE, nombreValido, estiradoValido, guardarSecreto,
   coincide, igualSinChivarse, resumen, alAzar, codigoDeRescate,
 } from "./secretos.js";
+import { repartirForo } from "./foro.js";
+import { marcasDelCurso, apuntarMarcas } from "./marcas.js";
 
 const MAX_PROGRESO = 64 * 1024;
 const DIAS_DE_SESION = 180;
@@ -77,6 +79,16 @@ export async function manejar(peticion, entorno) {
 
 async function repartir(ruta, peticion, entorno) {
   const metodo = peticion.method;
+
+  // El foro va aparte, en su propio archivo. Se mira antes que el resto
+  // porque casi todo lo suyo se lee sin cuenta, y quién eres se averigua
+  // una sola vez y se le pasa hecho.
+  if (ruta.startsWith("/api/foro/")) {
+    const quienEs = await deLaSesion(peticion, entorno);
+    const respuesta = await repartirForo(ruta, peticion, entorno, quienEs);
+    if (respuesta) return respuesta;
+  }
+
   if (ruta === "/api/registro" && metodo === "POST") return registrar(peticion, entorno);
   if (ruta === "/api/entrar" && metodo === "POST") return entrar(peticion, entorno);
   if (ruta === "/api/salir" && metodo === "POST") return salir(peticion, entorno);
@@ -293,6 +305,12 @@ async function escribirProgreso(peticion, entorno) {
     hechas: (Array.isArray(cuerpo.progreso.hechas) ? cuerpo.progreso.hechas : [])
       .filter((n) => Number.isInteger(n) && n >= 0 && n < 500).slice(0, 500),
     actual: Number.isInteger(cuerpo.progreso.actual) ? Math.max(0, Math.min(499, cuerpo.progreso.actual)) : 0,
+    // En cuáles se miró la solución. Se guarda para poder dar la marca de
+    // haberlo sacado solo, y por eso llega del navegador y no se puede
+    // comprobar: quien se engañe con esto solo se engaña a sí mismo, que es
+    // un precio razonable por no vigilar a nadie.
+    mirados: (Array.isArray(cuerpo.progreso.mirados) ? cuerpo.progreso.mirados : [])
+      .filter((n) => Number.isInteger(n) && n >= 0 && n < 500).slice(0, 500),
     borradores: {},
   };
   const vienen = cuerpo.progreso.borradores;
@@ -311,7 +329,12 @@ async function escribirProgreso(peticion, entorno) {
     "INSERT INTO progreso (alumno, datos, guardado) VALUES (?, ?, ?) " +
     "ON CONFLICT(alumno) DO UPDATE SET datos = excluded.datos, guardado = excluded.guardado"
   ).bind(alumno.id, datos, Date.now()).run();
-  return responder({ hecho: true }, 200);
+
+  // Las marcas se reparten aquí, mirando lo que se acaba de guardar. Se
+  // deciden en el servidor a partir del progreso de verdad, así que no hay
+  // forma de pedirse una desde el navegador.
+  const ganadas = await apuntarMarcas(entorno, alumno.id, marcasDelCurso(alumno.id, limpio));
+  return responder({ hecho: true, marcas: ganadas }, 200);
 }
 
 // --- Sesiones ------------------------------------------------------------
