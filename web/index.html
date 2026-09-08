@@ -141,26 +141,67 @@ textarea {
 .veredicto.mal { color: var(--tierra); }
 
 dialog {
-  border: 1px solid var(--borde); border-radius: 10px; background: var(--caja); color: var(--tinta);
-  padding: 0; max-width: 420px; width: calc(100% - 32px);
+  border: 1px solid var(--borde); border-radius: 12px; background: var(--caja); color: var(--tinta);
+  padding: 0; max-width: 430px; width: calc(100% - 28px);
+  box-shadow: 0 18px 50px rgba(0,0,0,.18);
 }
-dialog::backdrop { background: rgba(0,0,0,.45); }
-dialog .dentro { padding: 22px 24px 24px; }
-dialog h2 { margin: 0 0 4px; font-size: 21px; }
-dialog p.sub { margin: 0 0 18px; color: var(--suave); font-size: 14.5px; }
-dialog label { display: block; font-size: 13.5px; color: var(--suave); margin: 12px 0 4px; }
+@media (prefers-color-scheme: dark) { dialog { box-shadow: 0 18px 50px rgba(0,0,0,.5); } }
+dialog::backdrop { background: rgba(20,18,14,.5); backdrop-filter: blur(2px); }
+dialog .dentro { padding: 26px 26px 24px; }
+dialog h2 { margin: 0 0 5px; font-size: 22px; }
+dialog p.sub { margin: 0 0 20px; color: var(--suave); font-size: 14.5px; text-wrap: pretty; }
+
+/* El trato, dicho antes de pedir nada. Es lo que separa esto de cualquier
+   otro registro, así que va arriba y no en letra pequeña al final. */
+.trato {
+  background: var(--codigo-fondo); border: 1px solid var(--borde);
+  border-radius: 8px; padding: 12px 14px; margin: 0 0 20px; font-size: 13.5px;
+}
+.trato b { display: block; margin-bottom: 3px; font-size: 13px; }
+.trato span { color: var(--suave); }
+
+dialog label { display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 13px; color: var(--suave); margin: 14px 0 5px; }
 dialog input {
-  width: 100%; padding: 9px 11px; border: 1px solid var(--borde); border-radius: 6px;
-  background: var(--papel); color: var(--tinta); font: inherit;
+  width: 100%; padding: 10px 12px; border: 1px solid var(--borde); border-radius: 7px;
+  background: var(--papel); color: var(--tinta); font: inherit; font-size: 15px;
 }
-dialog .fila-botones { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
-dialog .error { color: var(--tierra); font-size: 14px; margin: 12px 0 0; }
-dialog .cambiar { background: none; border: 0; color: var(--azul); padding: 0; font-size: 14px; text-decoration: underline; }
+dialog input:focus { outline: 2px solid var(--azul); outline-offset: -1px; border-color: var(--azul); }
+dialog input.mal { border-color: var(--tierra); }
+.ojo { background: none; border: 0; color: var(--azul); font-size: 12.5px; padding: 0; cursor: pointer; }
+.nota { font-size: 12.5px; color: var(--suave); margin: 5px 0 0; min-height: 1.35em; }
+.nota.mal { color: var(--tierra); }
+.nota.bien { color: var(--verde); }
+
+/* La barra de la contraseña mide longitud, que es lo que de verdad cuesta
+   romper. No pide mayúsculas ni símbolos: eso empuja a la gente hacia
+   contraseñas cortas y retorcidas que se adivinan antes que una frase. */
+.fuerza { display: flex; gap: 3px; margin-top: 7px; }
+.fuerza i { flex: 1; height: 3px; border-radius: 2px; background: var(--borde); transition: background .2s; }
+.fuerza.f1 i:nth-child(1) { background: var(--tierra); }
+.fuerza.f2 i:nth-child(-n+2) { background: #c98a2e; }
+.fuerza.f3 i:nth-child(-n+3) { background: var(--verde); }
+.fuerza.f4 i { background: var(--verde); }
+
+dialog .fila-botones { display: flex; gap: 10px; margin-top: 22px; align-items: center; }
+dialog .error {
+  color: var(--tierra); font-size: 14px; margin: 16px 0 0; padding: 10px 12px;
+  background: color-mix(in srgb, var(--tierra) 9%, transparent);
+  border-radius: 7px; border: 1px solid color-mix(in srgb, var(--tierra) 28%, transparent);
+}
+.pie-dialogo { margin: 16px 0 0; font-size: 13.5px; color: var(--suave); text-align: center; }
+.comoEnlace { background: none; border: 0; color: var(--azul); padding: 0; font: inherit; font-size: 13.5px; cursor: pointer; text-decoration: underline; }
+
 .rescate {
-  font-family: var(--mono); font-size: 17px; letter-spacing: .04em; background: var(--codigo-fondo);
-  border: 1px solid var(--borde); border-radius: 6px; padding: 12px; text-align: center; margin: 14px 0;
-  user-select: all;
+  font-family: var(--mono); font-size: 19px; letter-spacing: .06em; background: var(--codigo-fondo);
+  border: 1px solid var(--borde); border-radius: 8px; padding: 16px 12px; text-align: center;
+  margin: 16px 0 6px; user-select: all; word-break: break-all;
 }
+.aviso-fuerte {
+  border-left: 3px solid var(--tierra); background: var(--codigo-fondo);
+  border-radius: 0 8px 8px 0; padding: 12px 14px; font-size: 13.5px; margin: 0 0 4px;
+}
+dialog .cargando { opacity: .6; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -220,32 +261,82 @@ dialog .cambiar { background: none; border: 0; color: var(--azul); padding: 0; f
 
 <dialog id="dialogoCuenta">
   <form method="dialog" class="dentro" id="formCuenta">
-    <h2 id="dlgTitulo">Guardar mi progreso</h2>
-    <p class="sub" id="dlgSub">Para seguir el curso desde otro sitio. No pedimos correo.</p>
+    <h2 id="dlgTitulo">Guarda tu progreso</h2>
+    <p class="sub" id="dlgSub">Para seguir el curso desde el móvil, desde clase o desde donde quieras.</p>
+
+    <div class="trato" id="dlgTrato">
+      <b>Sin correo, sin nombre real, sin nada.</b>
+      <span>Elige un nombre cualquiera y una contraseña. No guardamos ningún dato que diga quién eres.</span>
+    </div>
+
     <label for="dlgUsuario">Nombre</label>
-    <input id="dlgUsuario" autocomplete="username" minlength="3" maxlength="24" required>
-    <label for="dlgClave">Contraseña</label>
+    <input id="dlgUsuario" autocomplete="username" minlength="3" maxlength="24"
+           spellcheck="false" autocapitalize="off" required>
+    <p class="nota" id="notaUsuario"></p>
+
+    <label for="dlgClave">
+      <span>Contraseña</span>
+      <button type="button" class="ojo" id="verClave">Ver</button>
+    </label>
     <input id="dlgClave" type="password" autocomplete="current-password" minlength="8" required>
+    <div class="fuerza" id="fuerza" hidden><i></i><i></i><i></i><i></i></div>
+    <p class="nota" id="notaClave"></p>
+
     <p class="error" id="dlgError" hidden></p>
+
     <div class="fila-botones">
       <button class="btn lleno" id="dlgAceptar" type="submit">Crear cuenta</button>
       <button class="btn gris" type="button" id="dlgCancelar">Ahora no</button>
-      <button class="cambiar" type="button" id="dlgCambiar">Ya tengo una</button>
     </div>
+    <p class="pie-dialogo" id="dlgPie"></p>
   </form>
 </dialog>
 
 <dialog id="dialogoRescate">
   <div class="dentro">
-    <h2>Guarda este código</h2>
-    <p class="sub">Es lo único que te devuelve la cuenta si olvidas la contraseña.
-      No lo podemos volver a enseñar, porque no lo guardamos.</p>
+    <h2>Apunta este código</h2>
+    <p class="sub">Es lo único que te devuelve la cuenta si olvidas la contraseña.</p>
     <div class="rescate" id="textoRescate"></div>
+    <p class="aviso-fuerte">
+      No lo podemos volver a enseñar, porque no lo guardamos: de él solo tenemos
+      una huella con la que comprobarlo. Si lo pierdes y olvidas la contraseña,
+      la cuenta no se recupera de ninguna manera.
+    </p>
     <div class="fila-botones">
       <button class="btn lleno" id="rescateCopiar">Copiar</button>
-      <button class="btn gris" id="rescateHecho">Ya lo he guardado</button>
+      <button class="btn" id="rescateBajar">Descargar</button>
+      <button class="btn gris" id="rescateHecho" disabled title="Cópialo o descárgalo antes">Ya está</button>
     </div>
   </div>
+</dialog>
+
+<dialog id="dialogoOlvido">
+  <form method="dialog" class="dentro" id="formOlvido">
+    <h2>Recuperar la cuenta</h2>
+    <p class="sub">Con el código que te dimos al crearla. Sirve una vez: al usarlo te damos otro nuevo.</p>
+
+    <label for="olvUsuario">Tu nombre</label>
+    <input id="olvUsuario" autocomplete="username" spellcheck="false" autocapitalize="off" required>
+
+    <label for="olvCodigo">Código de rescate</label>
+    <input id="olvCodigo" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" spellcheck="false"
+           autocapitalize="characters" required>
+
+    <label for="olvClave">
+      <span>Contraseña nueva</span>
+      <button type="button" class="ojo" id="verClaveNueva">Ver</button>
+    </label>
+    <input id="olvClave" type="password" autocomplete="new-password" minlength="8" required>
+    <div class="fuerza" id="fuerzaNueva"><i></i><i></i><i></i><i></i></div>
+    <p class="nota" id="notaClaveNueva"></p>
+
+    <p class="error" id="olvError" hidden></p>
+
+    <div class="fila-botones">
+      <button class="btn lleno" id="olvAceptar" type="submit">Cambiar la contraseña</button>
+      <button class="btn gris" type="button" id="olvCancelar">Volver</button>
+    </div>
+  </form>
 </dialog>
 
 <script type="module">
@@ -482,25 +573,163 @@ function pintarCuenta(usuario) {
 }
 
 let modoRegistro = true;
+
 function abrirDialogo() {
   modoRegistro = true;
   ponerModo();
-  $("dlgError").hidden = true;
   $("dialogoCuenta").showModal();
+  $("dlgUsuario").focus();
 }
 
 function ponerModo() {
-  $("dlgTitulo").textContent = modoRegistro ? "Guardar mi progreso" : "Entrar";
+  $("dlgTitulo").textContent = modoRegistro ? "Guarda tu progreso" : "Entrar";
   $("dlgSub").textContent = modoRegistro
-    ? "Para seguir el curso desde otro sitio. No pedimos correo."
+    ? "Para seguir el curso desde el móvil, desde clase o desde donde quieras."
     : "Con el nombre y la contraseña que elegiste.";
   $("dlgAceptar").textContent = modoRegistro ? "Crear cuenta" : "Entrar";
-  $("dlgCambiar").textContent = modoRegistro ? "Ya tengo una" : "Crear una nueva";
   $("dlgClave").autocomplete = modoRegistro ? "new-password" : "current-password";
+  $("dlgTrato").hidden = !modoRegistro;
+  $("fuerza").hidden = !modoRegistro;
+  $("dlgError").hidden = true;
+  $("notaUsuario").textContent = "";
+  $("notaClave").textContent = "";
+
+  // El pie cambia de sentido según el modo, y en el de entrar es donde vive
+  // la salida para quien ha olvidado la contraseña. Antes esa puerta no
+  // estaba en ningún sitio: el servidor sabía recuperar cuentas y la página
+  // no lo ofrecía, así que el código de rescate no servía para nada.
+  const pie = $("dlgPie");
+  pie.innerHTML = "";
+  if (modoRegistro) {
+    pie.append("¿Ya tienes una? ");
+    pie.appendChild(comoEnlace("Entrar", () => { modoRegistro = false; ponerModo(); }));
+  } else {
+    pie.appendChild(comoEnlace("Crear una cuenta nueva", () => { modoRegistro = true; ponerModo(); }));
+    pie.append(" · ");
+    pie.appendChild(comoEnlace("He olvidado la contraseña", abrirOlvido));
+  }
+  comprobarCampos();
 }
 
-$("dlgCambiar").onclick = () => { modoRegistro = !modoRegistro; ponerModo(); $("dlgError").hidden = true; };
+function comoEnlace(texto, alPulsar) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "comoEnlace";
+  b.textContent = texto;
+  b.onclick = alPulsar;
+  return b;
+}
+
+// Enseñar la contraseña. Escribir a ciegas una contraseña larga es la razón
+// por la que la gente pone contraseñas cortas.
+function ponerOjo(boton, campo) {
+  $(boton).onclick = () => {
+    const c = $(campo);
+    const verla = c.type === "password";
+    c.type = verla ? "text" : "password";
+    $(boton).textContent = verla ? "Ocultar" : "Ver";
+    c.focus();
+  };
+}
+ponerOjo("verClave", "dlgClave");
+ponerOjo("verClaveNueva", "olvClave");
+
+// La medida es la longitud, no los símbolos raros. Exigir mayúsculas y
+// números empuja a la gente hacia contraseñas cortas y retorcidas, que se
+// adivinan mucho antes que una frase larga y fácil de recordar.
+function pintarFuerza(clave, elemento, nota) {
+  const n = clave.length;
+  const nivel = n === 0 ? 0 : n < 8 ? 1 : n < 12 ? 2 : n < 16 ? 3 : 4;
+  elemento.className = "fuerza f" + nivel;
+  if (!nota) return;
+  const textos = {
+    0: "",
+    1: "Muy corta. Hacen falta ocho letras por lo menos.",
+    2: "Vale. Una frase de varias palabras sería más segura y más fácil de recordar.",
+    3: "Bien.",
+    4: "Muy bien.",
+  };
+  nota.textContent = textos[nivel];
+  nota.className = "nota" + (nivel === 1 ? " mal" : nivel >= 3 ? " bien" : "");
+}
+
+// Decir lo que falla mientras se escribe, y no después de pulsar el botón.
+function comprobarCampos() {
+  const usuario = $("dlgUsuario").value.trim();
+  const nota = $("notaUsuario");
+  let vale = true;
+
+  if (usuario === "") {
+    nota.textContent = modoRegistro ? "Entre 3 y 24 letras, números, guiones o barras bajas." : "";
+    nota.className = "nota";
+    vale = false;
+  } else if (!/^[a-zA-Z0-9_-]+$/.test(usuario)) {
+    nota.textContent = "Solo letras sin tildes, números, guiones y barras bajas.";
+    nota.className = "nota mal";
+    vale = false;
+  } else if (usuario.length < 3 || usuario.length > 24) {
+    nota.textContent = "Tiene que medir entre 3 y 24.";
+    nota.className = "nota mal";
+    vale = false;
+  } else {
+    nota.textContent = "";
+    nota.className = "nota";
+  }
+  $("dlgUsuario").classList.toggle("mal", usuario !== "" && !vale);
+
+  const clave = $("dlgClave").value;
+  if (modoRegistro) pintarFuerza(clave, $("fuerza"), $("notaClave"));
+  $("dlgAceptar").disabled = !vale || clave.length < 8;
+}
+
+$("dlgUsuario").addEventListener("input", comprobarCampos);
+$("dlgClave").addEventListener("input", comprobarCampos);
+$("olvClave").addEventListener("input", () =>
+  pintarFuerza($("olvClave").value, $("fuerzaNueva"), $("notaClaveNueva")));
+
+// El código de rescate se escribe en mayúsculas y con guiones cada cinco,
+// así que se va colocando solo mientras lo teclean o lo pegan.
+$("olvCodigo").addEventListener("input", (ev) => {
+  const limpio = ev.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20);
+  ev.target.value = (limpio.match(/.{1,5}/g) || []).join("-");
+});
+
 $("dlgCancelar").onclick = () => $("dialogoCuenta").close();
+$("olvCancelar").onclick = () => { $("dialogoOlvido").close(); abrirDialogo(); };
+
+function abrirOlvido() {
+  $("dialogoCuenta").close();
+  $("olvError").hidden = true;
+  $("olvUsuario").value = $("dlgUsuario").value.trim();
+  $("olvCodigo").value = "";
+  $("olvClave").value = "";
+  pintarFuerza("", $("fuerzaNueva"), $("notaClaveNueva"));
+  $("dialogoOlvido").showModal();
+  ($("olvUsuario").value ? $("olvCodigo") : $("olvUsuario")).focus();
+}
+
+$("formOlvido").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const boton = $("olvAceptar");
+  const error = $("olvError");
+  error.hidden = true;
+  boton.disabled = true;
+  boton.textContent = "Comprobando…";
+  try {
+    const r = await cuenta.rescatar(
+      $("olvUsuario").value.trim(), $("olvCodigo").value.trim(), $("olvClave").value);
+    $("dialogoOlvido").close();
+    pintarCuenta(r.usuario);
+    if (r.rescate) enseñarRescate(r.rescate);
+    await sincronizar();
+  } catch (fallo) {
+    error.textContent = fallo.message;
+    error.hidden = false;
+  } finally {
+    boton.disabled = false;
+    boton.textContent = "Cambiar la contraseña";
+  }
+});
 
 $("formCuenta").addEventListener("submit", async (ev) => {
   ev.preventDefault();
@@ -518,29 +747,78 @@ $("formCuenta").addEventListener("submit", async (ev) => {
       : await cuenta.entrar(usuario, clave);
     pintarCuenta(r.usuario);
     $("dialogoCuenta").close();
+    $("dlgClave").value = "";
 
-    if (r.rescate) {
-      $("textoRescate").textContent = r.rescate;
-      $("dialogoRescate").showModal();
-    }
+    if (r.rescate) enseñarRescate(r.rescate);
     await sincronizar();
   } catch (fallo) {
     error.textContent = fallo.message;
     error.hidden = false;
+    // El nombre cogido es el fallo más común al registrarse, y la salida
+    // buena casi siempre es entrar en vez de inventarse otro nombre.
+    if (fallo.estado === 409) {
+      error.append(" ");
+      error.appendChild(comoEnlace("¿Es tuya? Entra.", () => {
+        modoRegistro = false; ponerModo(); $("dlgClave").focus();
+      }));
+    }
   } finally {
     boton.disabled = false;
-    ponerModo();
+    boton.textContent = modoRegistro ? "Crear cuenta" : "Entrar";
+    comprobarCampos();
   }
 });
+
+// El código de rescate solo se enseña una vez, así que la pantalla no deja
+// seguir hasta que se ha copiado o descargado. Un botón de «vale» que se
+// pulsa sin leer es exactamente como se pierde una cuenta.
+function enseñarRescate(codigo) {
+  $("textoRescate").textContent = codigo;
+  $("rescateCopiar").textContent = "Copiar";
+  $("rescateBajar").textContent = "Descargar";
+  $("rescateHecho").disabled = true;
+  $("dialogoRescate").showModal();
+}
+
+function yaLoTiene() {
+  $("rescateHecho").disabled = false;
+  $("rescateHecho").title = "";
+}
 
 $("rescateCopiar").onclick = async () => {
   try {
     await navigator.clipboard.writeText($("textoRescate").textContent);
     $("rescateCopiar").textContent = "Copiado";
+    yaLoTiene();
   } catch (e) {
+    // Sin permiso para el portapapeles, que pasa en bastantes navegadores.
+    // Se selecciona el código para que baste con pulsar copiar a mano.
+    const rango = document.createRange();
+    rango.selectNodeContents($("textoRescate"));
+    getSelection().removeAllRanges();
+    getSelection().addRange(rango);
     $("rescateCopiar").textContent = "Cópialo a mano";
+    yaLoTiene();
   }
 };
+
+$("rescateBajar").onclick = () => {
+  const texto =
+    "Código de rescate de tu cuenta en la academia de Fal\n\n" +
+    "Usuario: " + (document.querySelector("#zonaCuenta button")?.textContent || "") + "\n" +
+    "Código:  " + $("textoRescate").textContent + "\n\n" +
+    "Sirve para recuperar la cuenta si olvidas la contraseña, en\n" +
+    "https://aprende.fal-lang.org, en «He olvidado la contraseña».\n" +
+    "Guárdalo donde no lo pierdas. No se puede volver a ver.\n";
+  const enlace = document.createElement("a");
+  enlace.href = URL.createObjectURL(new Blob([texto], { type: "text/plain" }));
+  enlace.download = "fal-codigo-de-rescate.txt";
+  enlace.click();
+  URL.revokeObjectURL(enlace.href);
+  $("rescateBajar").textContent = "Descargado";
+  yaLoTiene();
+};
+
 $("rescateHecho").onclick = () => $("dialogoRescate").close();
 
 async function salirDeLaCuenta() {
