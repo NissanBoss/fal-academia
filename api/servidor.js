@@ -489,6 +489,18 @@ async function escribirProgreso(peticion, entorno) {
 async function abrirSesion(entorno, alumno) {
   const testigo = alAzar(32);
   const ahora = Date.now();
+
+  // De paso, fuera lo caducado.
+  //
+  // Hasta ahora la caducidad solo se miraba al leer: una sesion de hace un
+  // año seguia sin valer, pero su fila se quedaba ahi para siempre. Y una
+  // fila de sesion dice cuando entro alguien, o sea que era un apunte de la
+  // actividad de una persona guardado despues de dejar de servir para nada.
+  //
+  // Se hace aqui, al abrir una sesion nueva, y no con una tarea programada,
+  // porque Pages no tiene de eso. Sale una escritura de mas por cada vez
+  // que alguien entra, que es de las cosas menos frecuentes que pasan.
+  await limpiarCaducado(entorno, ahora);
   await entorno.DB.prepare(
     "INSERT INTO sesiones (testigo, alumno, creada) VALUES (?, ?, ?)"
   ).bind(await resumen(testigo), alumno, ahora).run();
@@ -518,6 +530,18 @@ async function deLaSesion(peticion, entorno) {
   ).bind(await resumen(testigo)).first();
   if (!fila || fila.creada < caduca) return null;
   return { id: fila.id, usuario: fila.usuario };
+}
+
+// Borra lo que ya no sirve: sesiones pasadas de fecha e intentos fallidos
+// cuyo castigo se cumplio hace rato. Tambien se lleva la fila del cupo de
+// registros cuando su hora termina, que hayCupoParaRegistrar() vuelve a
+// crear sola.
+async function limpiarCaducado(entorno, ahora) {
+  const caduca = ahora - DIAS_DE_SESION * 24 * 60 * 60 * 1000;
+  await entorno.DB.batch([
+    entorno.DB.prepare("DELETE FROM sesiones WHERE creada < ?").bind(caduca),
+    entorno.DB.prepare("DELETE FROM fallos WHERE hasta <= ?").bind(ahora),
+  ]);
 }
 
 // --- Intentos fallidos ---------------------------------------------------
