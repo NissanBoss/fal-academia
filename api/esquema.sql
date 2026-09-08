@@ -27,7 +27,6 @@ CREATE TABLE IF NOT EXISTS sesiones (
   testigo  TEXT PRIMARY KEY,
   alumno   INTEGER NOT NULL,
   creada   INTEGER NOT NULL,
-  vista    INTEGER NOT NULL,
   FOREIGN KEY (alumno) REFERENCES alumnos(id) ON DELETE CASCADE
 );
 

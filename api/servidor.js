@@ -490,8 +490,8 @@ async function abrirSesion(entorno, alumno) {
   const testigo = alAzar(32);
   const ahora = Date.now();
   await entorno.DB.prepare(
-    "INSERT INTO sesiones (testigo, alumno, creada, vista) VALUES (?, ?, ?, ?)"
-  ).bind(await resumen(testigo), alumno, ahora, ahora).run();
+    "INSERT INTO sesiones (testigo, alumno, creada) VALUES (?, ?, ?)"
+  ).bind(await resumen(testigo), alumno, ahora).run();
 
   const segundos = DIAS_DE_SESION * 24 * 60 * 60;
   // HttpOnly para que ningun script pueda leerla, Secure para que no salga
