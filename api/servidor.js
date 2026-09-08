@@ -38,6 +38,28 @@ const DIAS_DE_SESION = 180;
 const FALLOS_PERMITIDOS = 8;
 const MINUTOS_CASTIGO = 15;
 
+// Cuantas cuentas nuevas se admiten por hora en todo el sitio.
+//
+// Entrar tenia freno desde el principio y registrarse no tenia ninguno:
+// cualquiera podia crear cuentas en bucle. Sin guardar la IP no hay forma
+// de frenar por persona, asi que se frena el total.
+//
+// Es tosco, y hay que decirlo: alguien empeñado puede agotar el cupo de una
+// hora y dejar sin registrarse a quien llegue detras. Pero ese daño dura
+// una hora y se arregla solo, mientras que el de dejar la puerta abierta es
+// que un programa cree diez mil cuentas en un minuto, se quede con las cien
+// plazas de fundador y se lleve por delante el cupo diario de escrituras de
+// la base de datos, que en el plan gratuito son cien mil.
+//
+// Veinte a la hora es de sobra para lo que este sitio va a recibir de
+// verdad, y ridiculo para lo que necesita un programa.
+const REGISTROS_POR_HORA = 20;
+
+// Va en la tabla de fallos, con una llave que lleva espacios. nombreValido()
+// no admite espacios, asi que ningun nombre de persona puede chocar con
+// esta ni al derecho ni al reves.
+const CUPO_REGISTROS = "registros globales";
+
 // La puerta de entrada. La llama functions/api/[[camino]].js, que es lo que
 // Cloudflare Pages ejecuta para cualquier dirección que empiece por /api/.
 //
@@ -194,6 +216,14 @@ async function registrar(peticion, entorno) {
   const llave = usuario.toLowerCase();
   const ya = await entorno.DB.prepare("SELECT id FROM alumnos WHERE llave = ?").bind(llave).first();
   if (ya) return responder({ error: "Ese nombre ya lo tiene alguien. Prueba con otro." }, 409);
+
+  // El cupo se mira aqui, cuando ya se sabe que el nombre vale y que esta
+  // libre, para que probar nombres ocupados no gaste plazas de nadie.
+  if (!(await hayCupoParaRegistrar(entorno))) {
+    return responder({
+      error: "Se estan creando muchas cuentas ahora mismo. Vuelve dentro de un rato.",
+    }, 429);
+  }
 
   // El codigo de rescate se enseña una vez y no se vuelve a poder ver,
   // porque de el solo se guarda el hash. Es la unica forma de recuperar la
@@ -437,6 +467,27 @@ async function deLaSesion(peticion, entorno) {
 }
 
 // --- Intentos fallidos ---------------------------------------------------
+
+// Si queda sitio en el cupo de esta hora, lo apunta y dice que si. La
+// ventana no es de reloj: empieza con la primera cuenta y dura una hora
+// desde ahi.
+async function hayCupoParaRegistrar(entorno) {
+  const ahora = Date.now();
+  const fila = await entorno.DB.prepare("SELECT cuantos, hasta FROM fallos WHERE quien = ?")
+    .bind(CUPO_REGISTROS).first();
+
+  if (!fila || fila.hasta <= ahora) {
+    await entorno.DB.prepare(
+      "INSERT INTO fallos (quien, cuantos, hasta) VALUES (?, 1, ?) " +
+      "ON CONFLICT(quien) DO UPDATE SET cuantos = 1, hasta = excluded.hasta"
+    ).bind(CUPO_REGISTROS, ahora + 60 * 60 * 1000).run();
+    return true;
+  }
+  if (fila.cuantos >= REGISTROS_POR_HORA) return false;
+  await entorno.DB.prepare("UPDATE fallos SET cuantos = cuantos + 1 WHERE quien = ?")
+    .bind(CUPO_REGISTROS).run();
+  return true;
+}
 
 async function castigado(entorno, quien) {
   const fila = await entorno.DB.prepare("SELECT cuantos, hasta FROM fallos WHERE quien = ?")
