@@ -61,26 +61,69 @@ async function llamar(camino, opciones) {
   if (!respuesta.ok) {
     const fallo = new Error(cuerpo.error || "No se ha podido conectar con la academia.");
     fallo.estado = respuesta.status;
+    // Si el servidor pide una prueba de trabajo, viene aqui dentro y quien
+    // llamo puede resolverla y volver a intentarlo.
+    fallo.reto = cuerpo.reto;
     throw fallo;
   }
   return cuerpo;
 }
 
+// Resuelve la prueba de trabajo en un hilo aparte, para no congelar la
+// pagina el segundo que tarda. Si por lo que sea no se puede abrir el hilo,
+// se hace aqui mismo: mas vale una pagina tiesa un segundo que una que no
+// deja registrarse.
+function resolverReto(reto) {
+  return new Promise((listo, falla) => {
+    let obrero;
+    try {
+      obrero = new Worker(new URL("./obrero.js", import.meta.url), { type: "module" });
+    } catch (e) {
+      import("./trabajo.js").then((m) => listo(m.resolver(reto.semilla, reto.ceros)), falla);
+      return;
+    }
+    obrero.onmessage = (aviso) => {
+      obrero.terminate();
+      if (aviso.data && aviso.data.error) falla(new Error(aviso.data.error));
+      else listo(aviso.data);
+    };
+    obrero.onerror = () => {
+      obrero.terminate();
+      import("./trabajo.js").then((m) => listo(m.resolver(reto.semilla, reto.ceros)), falla);
+    };
+    obrero.postMessage({ semilla: reto.semilla, ceros: reto.ceros });
+  });
+}
+
 export const cuenta = {
   async registrar(usuario, clave) {
     const estirado = await estirar(usuario, clave);
+    // Antes de crear una cuenta hay que pagar un poco de trabajo. Se pide
+    // la semilla, se resuelve aqui, y va con el resto.
+    const reto = await llamar("/api/reto?usuario=" + encodeURIComponent(usuario), { method: "GET" });
+    const { nonce } = await resolverReto(reto);
     return llamar("/api/registro", {
       method: "POST",
-      body: JSON.stringify({ usuario, estirado }),
+      body: JSON.stringify({ usuario, estirado, nonce }),
     });
   },
 
+  // Entrar no pide trabajo la primera vez. Solo si ya se ha fallado antes
+  // con ese nombre, y entonces el servidor manda la semilla dentro del
+  // error y se reintenta una vez sin molestar a nadie.
   async entrar(usuario, clave) {
     const estirado = await estirar(usuario, clave);
-    return llamar("/api/entrar", {
+    const mandar = (nonce) => llamar("/api/entrar", {
       method: "POST",
-      body: JSON.stringify({ usuario, estirado }),
+      body: JSON.stringify({ usuario, estirado, nonce }),
     });
+    try {
+      return await mandar();
+    } catch (fallo) {
+      if (!fallo.reto) throw fallo;
+      const { nonce } = await resolverReto(fallo.reto);
+      return mandar(nonce);
+    }
   },
 
   async rescatar(usuario, codigo, claveNueva) {

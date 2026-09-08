@@ -31,6 +31,10 @@ import {
   coincide, igualSinChivarse, resumen, alAzar, codigoDeRescate,
 } from "./secretos.js";
 import { repartirForo } from "./foro.js";
+import {
+  CEROS_REGISTRO, CEROS_ENTRAR, ventanaAhora,
+  semillaDeRegistro, semillaDeEntrada, trabajoHecho,
+} from "./trabajo.js";
 import { marcasDelCurso, apuntarMarcas } from "./marcas.js";
 
 const MAX_PROGRESO = 64 * 1024;
@@ -114,6 +118,7 @@ async function repartir(ruta, peticion, entorno) {
     if (respuesta) return respuesta;
   }
 
+  if (ruta === "/api/reto" && metodo === "GET") return darReto(peticion);
   if (ruta === "/api/registro" && metodo === "POST") return registrar(peticion, entorno);
   if (ruta === "/api/entrar" && metodo === "POST") return entrar(peticion, entorno);
   if (ruta === "/api/salir" && metodo === "POST") return salir(peticion, entorno);
@@ -199,6 +204,24 @@ function responder(cuerpo, estado, origen, extra) {
 // --- Cuentas -------------------------------------------------------------
 
 
+// La semilla para registrarse. Se pide antes de mandar el formulario.
+//
+// No hace falta guardar nada de lo que se reparte aqui: la semilla se
+// deduce del nombre y de la hora, asi que el servidor puede recalcularla al
+// comprobarla. En un plan gratuito con cupo de escrituras, un reto que
+// hubiera que apuntar en la base de datos seria una forma preciosa de
+// tumbar el sitio pidiendo retos.
+function darReto(peticion) {
+  const usuario = new URL(peticion.url).searchParams.get("usuario") || "";
+  if (!nombreValido(usuario)) {
+    return responder({ error: "Ese nombre no vale." }, 400);
+  }
+  return responder({
+    semilla: semillaDeRegistro(usuario, ventanaAhora()),
+    ceros: CEROS_REGISTRO,
+  }, 200);
+}
+
 async function registrar(peticion, entorno) {
   const cuerpo = await leerJSON(peticion);
   if (!cuerpo) return responder({ error: "no entiendo lo que me mandas" }, 400);
@@ -216,6 +239,14 @@ async function registrar(peticion, entorno) {
   const llave = usuario.toLowerCase();
   const ya = await entorno.DB.prepare("SELECT id FROM alumnos WHERE llave = ?").bind(llave).first();
   if (ya) return responder({ error: "Ese nombre ya lo tiene alguien. Prueba con otro." }, 409);
+
+  // La prueba de trabajo va antes que el cupo: si no, alguien podria
+  // gastar las plazas de la hora sin pagar nada por ellas.
+  if (!(await trabajoHecho((v) => semillaDeRegistro(usuario, v), cuerpo.nonce, CEROS_REGISTRO))) {
+    return responder({
+      error: "Falta la comprobacion. Recarga la pagina y vuelve a intentarlo.",
+    }, 400);
+  }
 
   // El cupo se mira aqui, cuando ya se sabe que el nombre vale y que esta
   // libre, para que probar nombres ocupados no gaste plazas de nadie.
@@ -255,6 +286,29 @@ async function entrar(peticion, entorno) {
     return responder({
       error: "Demasiados intentos. Espera un cuarto de hora y vuelve.",
     }, 429);
+  }
+
+  // La prueba de trabajo solo aparece cuando ya se ha fallado alguna vez
+  // con este nombre. Quien acierta la contraseña a la primera, que es lo
+  // que hace la gente, no espera nada en absoluto; quien esta probando
+  // contraseñas paga medio segundo de maquina por cada una.
+  //
+  // El numero de fallos va dentro de la semilla, y sube con cada intento,
+  // asi que la solucion de un intento no sirve para el siguiente. Sin eso
+  // se resolveria una vez y se probarian mil contraseñas con ella.
+  const fallos = await cuantosFallos(entorno, llave);
+  if (fallos > 0) {
+    const hecho = await trabajoHecho(
+      (v) => semillaDeEntrada(usuario, v, fallos), cuerpo.nonce, CEROS_ENTRAR
+    );
+    if (!hecho) {
+      // Esto no dice si la cuenta existe: se apunta un fallo con cualquier
+      // nombre que se pruebe, exista o no.
+      return responder({
+        error: "Ese nombre o esa contraseña no son.",
+        reto: { semilla: semillaDeEntrada(usuario, ventanaAhora(), fallos), ceros: CEROS_ENTRAR },
+      }, 401);
+    }
   }
 
   const fila = await entorno.DB.prepare("SELECT id, usuario, clave FROM alumnos WHERE llave = ?")
@@ -487,6 +541,15 @@ async function hayCupoParaRegistrar(entorno) {
   await entorno.DB.prepare("UPDATE fallos SET cuantos = cuantos + 1 WHERE quien = ?")
     .bind(CUPO_REGISTROS).run();
   return true;
+}
+
+// Cuantos intentos fallidos lleva ese nombre. Cero si no hay ninguno o si
+// el castigo ya caduco: pasado el rato, se empieza de nuevo.
+async function cuantosFallos(entorno, quien) {
+  const fila = await entorno.DB.prepare("SELECT cuantos, hasta FROM fallos WHERE quien = ?")
+    .bind(quien).first();
+  if (!fila || fila.hasta <= Date.now()) return 0;
+  return fila.cuantos;
 }
 
 async function castigado(entorno, quien) {
