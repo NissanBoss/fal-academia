@@ -23,6 +23,10 @@ cp web/cuenta.js foro-publico/cuenta.js
 # apuntaria al vacio es dejar una trampa puesta para el que venga.
 cp web/trabajo.js web/obrero.js web/vista-previa-foro.png foro-publico/
 
+# El icono. Va a la raiz porque el navegador pide
+# /favicon.ico por su cuenta, sin mirar la pagina.
+cp web/favicon.svg web/favicon.ico web/apple-touch-icon.png foro-publico/
+
 # La fecha del ultimo cambio de verdad del foro, no la de esta publicacion.
 fecha=$(git log -1 --format=%cs -- web/foro.html 2>/dev/null || date +%F)
 
