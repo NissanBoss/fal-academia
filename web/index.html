@@ -9,6 +9,10 @@
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="fuentes/newsreader.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fuentes/plex-mono.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16171a" media="(prefers-color-scheme: dark)">
 <meta property="og:image" content="https://aprende.fal-lang.org/vista-previa.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -39,148 +43,210 @@
   }
 }
 </script>
+<link rel="stylesheet" href="comun.css">
 <style>
-:root {
-  --papel: #fbfaf7; --caja: #ffffff; --tinta: #1a1a18; --suave: #5f5c55;
-  --borde: #e2ded4; --azul: #1c4f8b; --tierra: #9c4420; --verde: #216e3f;
-  --codigo-fondo: #f6f4ef;
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", monospace;
+nav.sitio .fila { max-width: none; padding: 0 24px; }
+@media (max-width: 520px) { nav.sitio .fila { padding: 0 16px; } }
+
+.disposicion { display: grid; grid-template-columns: 290px minmax(0, 1fr); min-height: calc(100vh - var(--alto-barra)); }
+
+/* El índice. Arriba, cuánto llevas: un número grande y una regla con una
+   marca por lección, agrupadas por módulo. La barra de antes decía lo mismo
+   en 84 píxeles y no dejaba ver que el curso tiene partes. */
+aside {
+  border-right: 1px solid var(--borde); padding: 26px 0 40px;
+  position: sticky; top: var(--alto-barra); align-self: start;
+  max-height: calc(100vh - var(--alto-barra)); overflow-y: auto;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --papel: #16171a; --caja: #1d1f23; --tinta: #e8e6e1; --suave: #a2a099;
-    --borde: #30323a; --azul: #79b0e4; --tierra: #e0865c; --verde: #6fca92;
-    --codigo-fondo: #1a1c20;
-  }
+.avance { padding: 0 24px 22px; border-bottom: 1px solid var(--borde); margin-bottom: 8px; }
+.avance .cifra { margin: 0 0 12px; display: flex; align-items: baseline; gap: 8px; }
+.avance .cifra b { font: 400 46px/0.9 var(--serif); letter-spacing: -0.03em; color: var(--tierra); }
+.avance .cifra span { color: var(--suave); font-size: 14.5px; }
+.regla { display: flex; gap: 6px; height: 14px; }
+.regla .grupo { display: flex; gap: 2px; flex: var(--n) 1 0; }
+.regla i { flex: 1; border-radius: 1.5px; background: var(--borde); transition: background-color .4s; }
+.regla i.hecha { background: var(--tierra); }
+.regla i.actual { box-shadow: inset 0 0 0 1.5px var(--tierra); }
+.regla i.hecha.actual { box-shadow: inset 0 0 0 1.5px var(--tinta); }
+.avance .guardado { margin: 12px 0 0; font-size: 13px; color: var(--suave); line-height: 1.45; }
+
+.modulo h2 {
+  display: flex; align-items: baseline; gap: 10px;
+  margin: 18px 24px 6px; font: italic 400 18px/1.25 var(--serif); color: var(--tinta);
 }
-* { box-sizing: border-box; }
-[hidden] { display: none !important; }
-
-/* Las barras de desplazamiento vienen del sistema y en modo oscuro salen
-   blancas. Con un índice lateral que siempre tiene barra, es lo primero
-   que se ve de la página. */
-* { scrollbar-width: thin; scrollbar-color: var(--borde) transparent; }
-::-webkit-scrollbar { width: 11px; height: 11px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: var(--borde); border-radius: 6px; border: 3px solid var(--papel);
-}
-::-webkit-scrollbar-thumb:hover { background: var(--suave); }
-::-webkit-scrollbar-corner { background: transparent; }
-
-body { margin: 0; background: var(--papel); color: var(--tinta); font: 16px/1.6 var(--sans); }
-h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.25; }
-a { color: var(--azul); }
-code, pre, textarea { font-family: var(--mono); }
-button { font: inherit; cursor: pointer; }
-
-nav { border-bottom: 1px solid var(--borde); background: var(--papel); position: sticky; top: 0; z-index: 20; }
-nav .fila { display: flex; align-items: center; gap: 16px; height: 56px; padding: 0 20px; }
-.marca { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--tinta); text-decoration: none; }
-.marca span { color: var(--tierra); }
-.migas { color: var(--suave); font-size: 15px; }
-nav .derecha { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 14.5px; }
-nav .derecha a { color: var(--suave); text-decoration: none; }
-@media (max-width: 700px) { .migas, nav .derecha a.opcional { display: none; } }
-
-.avance { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--suave); }
-.barra-avance { width: 84px; height: 5px; background: var(--borde); border-radius: 3px; overflow: hidden; }
-.barra-avance i { display: block; height: 100%; background: var(--verde); width: 0; transition: width .3s; }
-
-.btn { padding: 7px 14px; border-radius: 6px; border: 1px solid var(--azul); background: transparent; color: var(--azul); }
-.btn.lleno { background: var(--azul); color: var(--papel); border-color: var(--azul); }
-.btn.gris { border-color: var(--borde); color: var(--suave); }
-.btn:disabled { opacity: .5; cursor: default; }
-
-.disposicion { display: grid; grid-template-columns: 250px 1fr; min-height: calc(100vh - 56px); }
-@media (max-width: 900px) { .disposicion { grid-template-columns: 1fr; } aside { display: none; } aside.abierto { display: block; } }
-
-aside { border-right: 1px solid var(--borde); padding: 18px 0 40px; overflow-y: auto; max-height: calc(100vh - 56px); position: sticky; top: 56px; }
-aside h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--suave); font-family: var(--sans); margin: 18px 20px 6px; }
-aside ol { list-style: none; margin: 0; padding: 0; }
-aside li a {
-  display: flex; gap: 9px; align-items: baseline; padding: 5px 20px; font-size: 14.5px;
+.modulo h2 .cuantas { margin-left: auto; font: 12.5px var(--mono); font-style: normal; color: var(--suave); }
+.modulo.hecho h2 .cuantas { color: var(--tierra); }
+.modulo ol { list-style: none; margin: 0; padding: 0; }
+.modulo li a {
+  display: flex; gap: 12px; align-items: baseline; padding: 5px 24px; font-size: 14.5px;
   color: var(--tinta); text-decoration: none; border-left: 2px solid transparent;
 }
-aside li a:hover { background: var(--codigo-fondo); }
-aside li a.actual { border-left-color: var(--tierra); background: var(--codigo-fondo); font-weight: 600; }
-aside li a .marca-hecha { color: var(--verde); width: 12px; flex: none; }
+.modulo li a:hover { background: var(--codigo-fondo); }
+.modulo li a[aria-current="page"] { border-left-color: var(--tierra); background: var(--codigo-fondo); font-weight: 600; }
+.modulo li .n { flex: none; width: 18px; text-align: right; font: 12px var(--mono); color: var(--suave); }
+.modulo li a.hecha .n { color: var(--tierra); font-weight: 600; }
 
-main { padding: 26px 28px 60px; max-width: 900px; }
-.leccion h1 { font-size: 27px; margin: 0 0 4px; }
-.donde { color: var(--suave); font-size: 14px; margin: 0 0 20px; }
-.cuerpo p { max-width: 40em; text-wrap: pretty; }
-.leccion h1, .donde { text-wrap: balance; }
+/* La lección, a lo ancho de un libro y no de la pantalla. */
+main { padding: 40px 48px 70px; min-width: 0; }
+.ancho { max-width: 880px; margin: 0 auto; }
+.donde { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 6px; font-size: 14.5px; color: var(--suave); }
+.donde .modulo-nombre { font: italic 17px var(--serif); color: var(--tierra); }
+.leccion h1 { font-size: clamp(32px, 4vw, 44px); font-weight: 500; letter-spacing: -0.02em; margin: 0 0 22px; line-height: 1.08; }
+.cuerpo { font-size: 17.5px; line-height: 1.65; }
+.cuerpo p { max-width: 36em; text-wrap: pretty; margin: 0 0 16px; }
 .cuerpo pre {
-  background: var(--codigo-fondo); border: 1px solid var(--borde); border-radius: 8px;
-  padding: 13px 15px; overflow-x: auto; font-size: 14px; line-height: 1.5;
+  background: var(--codigo-fondo); border: 1px solid var(--borde); border-radius: 10px;
+  padding: 14px 18px; overflow-x: auto; font-size: 14.5px; line-height: 1.6; margin: 4px 0 20px;
+  max-width: 40em;
 }
-.cuerpo :not(pre) > code {
-  background: var(--codigo-fondo); border: 1px solid var(--borde);
-  border-radius: 4px; padding: 1px 5px; font-size: .87em;
-}
+/* Sin esto "es mayor que" se partía entre dos líneas y parecían dos trozos
+   de código distintos. */
+.cuerpo :not(pre) > code, .tarea code { white-space: nowrap; }
 .tarea {
-  background: var(--caja); border: 1px solid var(--borde); border-left: 3px solid var(--tierra);
-  border-radius: 0 8px 8px 0; padding: 14px 16px; margin: 22px 0 16px; max-width: 44em;
+  position: relative; margin: 30px 0 18px; padding: 16px 20px 16px 22px; max-width: 40em;
+  border-left: 3px solid var(--tierra); background: var(--caja);
+  border-radius: 0 10px 10px 0; box-shadow: 0 1px 0 var(--borde);
 }
-.tarea b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--tierra); margin-bottom: 4px; }
-.tarea :not(pre) > code { background: var(--codigo-fondo); border: 1px solid var(--borde); border-radius: 4px; padding: 1px 5px; font-size: .87em; }
+.tarea b { display: block; font: italic 400 18px var(--serif); color: var(--tierra); margin-bottom: 2px; }
+.tarea p { margin: 0; font-size: 16.5px; text-wrap: pretty; }
 
-.taller { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 6px; }
-@media (max-width: 820px) { .taller { grid-template-columns: 1fr; } }
-.panel { border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; background: var(--caja); }
-.panel .cabeza { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--suave); padding: 7px 12px; border-bottom: 1px solid var(--borde); background: var(--codigo-fondo); }
-textarea {
-  width: 100%; border: 0; padding: 12px; background: transparent; color: var(--tinta);
-  font-size: 14px; line-height: 1.55; resize: vertical; outline: none; display: block;
+/* El taller, con la misma hoja que el cuaderno de la portada. */
+.hoja { background: var(--caja); border: 1px solid var(--borde); border-radius: 14px; box-shadow: var(--sombra); overflow: hidden; }
+.mesa { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+@media (max-width: 1060px) { .mesa { grid-template-columns: 1fr; } }
+.cabeza {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 10px 18px; border-bottom: 1px solid var(--borde);
+  font: italic 16px var(--serif); color: var(--suave);
 }
-#programa { min-height: 210px; }
-#entradas { min-height: 46px; }
-.salida { margin: 0; padding: 12px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; min-height: 210px; overflow: auto; }
-.salida .aviso { color: var(--suave); }
-.salida .malo { color: var(--tierra); }
-#lienzo svg { max-width: 100%; height: auto; display: block; margin: 8px auto; }
-
-.acciones { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
-.veredicto { font-size: 14.5px; }
-.veredicto.bien { color: var(--verde); font-weight: 600; }
-.veredicto.mal { color: var(--tierra); }
-
-dialog {
-  border: 1px solid var(--borde); border-radius: 12px; background: var(--caja); color: var(--tinta);
-  padding: 0; max-width: 430px; width: calc(100% - 28px);
-  box-shadow: 0 18px 50px rgba(0,0,0,.18);
+.cabeza .lejos { margin-left: auto; font: 13px var(--sans); }
+.lado-codigo { display: flex; flex-direction: column; min-width: 0; }
+.lado-codigo .editor { flex: 1; min-height: 230px; }
+.entradas { border-top: 1px dashed var(--borde); padding: 10px 18px 12px; }
+.entradas label { display: block; font-size: 13px; color: var(--suave); margin-bottom: 6px; }
+.entradas textarea {
+  width: 100%; min-height: 44px; resize: vertical; padding: 8px 10px;
+  border: 1px solid var(--borde); border-radius: 7px; background: var(--papel); color: var(--tinta);
+  font-size: 14px; line-height: 1.5;
 }
-@media (prefers-color-scheme: dark) { dialog { box-shadow: 0 18px 50px rgba(0,0,0,.5); } }
-dialog::backdrop { background: rgba(20,18,14,.5); backdrop-filter: blur(2px); }
+.lado-salida { border-left: 1px dashed var(--borde); min-width: 0; display: flex; flex-direction: column; transition: opacity .2s; }
+@media (max-width: 1060px) { .lado-salida { border-left: 0; border-top: 1px dashed var(--borde); } }
+.lado-salida.vieja { opacity: .45; }
+.salida { margin: 0; padding: 16px 18px; font: 14.5px/1.6 var(--mono); white-space: pre-wrap; word-break: break-word; min-height: 120px; max-height: 420px; overflow-y: auto; flex: 1; }
+.salida .aviso { color: var(--suave); font: italic 16px var(--serif); }
+.salida.error { color: var(--tierra); }
+.lado-salida .dibujo { padding: 0 18px 18px; }
+
+.barra { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 12px 16px; border-top: 1px solid var(--borde); }
+.barra .estado { font-size: 13px; color: var(--suave); }
+.barra .lejos { margin-left: auto; font-size: 14px; }
+
+/* La solución no pisa lo que llevas escrito: se enseña al lado, y si la
+   quieres en el editor es un botón más. Antes sustituía tu intento sin
+   avisar, y lo que habías escrito se perdía justo cuando más útil era
+   compararlo. */
+.solucion { border-top: 1px solid var(--borde); padding: 14px 18px 16px; background: var(--codigo-fondo); }
+.solucion .titulo { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; font: italic 16px var(--serif); color: var(--suave); }
+.solucion .titulo .boton { margin-left: auto; }
+.solucion pre { margin: 0; font: 14.5px/1.6 var(--mono); overflow-x: auto; }
+
+.veredicto { margin: 18px 0 0; }
+.veredicto:empty { display: none; }
+.veredicto .caja {
+  border-radius: 12px; padding: 16px 20px; border: 1px solid var(--borde); background: var(--caja);
+  animation: aparece .35s cubic-bezier(.2, .9, .25, 1);
+}
+@keyframes aparece { from { opacity: 0; transform: translateY(6px); } }
+.veredicto .caja.mal { border-left: 3px solid var(--tierra); border-radius: 0 12px 12px 0; }
+.veredicto .caja.bien {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  border-color: color-mix(in srgb, var(--verde) 45%, var(--borde));
+  background: color-mix(in srgb, var(--verde) 6%, var(--caja));
+}
+.veredicto .titulo { margin: 0; font: 500 21px/1.25 var(--serif); }
+.veredicto .bien .titulo { color: var(--verde); }
+.veredicto .mal .titulo { color: var(--tierra); }
+.veredicto .detalle { margin: 4px 0 0; font-size: 15px; color: var(--suave); text-wrap: pretty; }
+.veredicto .bien .boton { margin-left: auto; }
+.sello {
+  flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  border: 1.5px solid var(--verde); color: var(--verde);
+}
+.sello svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Cuando la salida no coincide, las dos una al lado de la otra y la primera
+   línea distinta marcada. "Compara lo que sale con lo que pide" obligaba a
+   hacerlo de memoria, y casi siempre la diferencia era un espacio. */
+.comparar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+@media (max-width: 620px) { .comparar { grid-template-columns: 1fr; } }
+.comparar .versalitas { display: block; margin-bottom: 4px; }
+.comparar pre {
+  margin: 0; padding: 10px 12px; border: 1px solid var(--borde); border-radius: 8px;
+  background: var(--codigo-fondo); font: 13.5px/1.6 var(--mono); white-space: pre-wrap; word-break: break-word;
+}
+.comparar pre span { display: block; min-height: 1.6em; }
+.comparar pre .difiere { background: var(--tierra-velo); box-shadow: -12px 0 0 var(--tierra-velo), 12px 0 0 var(--tierra-velo); }
+.comparar pre .falta { color: var(--suave); font-style: italic; }
+
+.pasos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 40px; }
+.paso {
+  display: block; padding: 14px 18px; border: 1px solid var(--borde); border-radius: 12px;
+  text-decoration: none; color: var(--tinta); transition: border-color .2s, transform .2s;
+}
+.paso:hover { border-color: color-mix(in srgb, var(--tierra) 50%, var(--borde)); transform: translateY(-1px); }
+.paso small { display: block; font-size: 13px; color: var(--suave); }
+.paso span { font: 500 18px/1.3 var(--serif); }
+.paso.alante { text-align: right; grid-column: 2; }
+
+/* En el móvil el índice se esconde detrás de un botón. El de antes
+   desaparecía sin más y no había forma de saltar a otra lección. */
+.abrir-indice { display: none; }
+@media (max-width: 900px) {
+  .disposicion { grid-template-columns: 1fr; }
+  aside {
+    position: fixed; z-index: 40; top: var(--alto-barra); left: 0; bottom: 0; width: min(320px, 86vw);
+    max-height: none; background: var(--papel); box-shadow: var(--sombra);
+    /* Con el start de arriba el cajón medía lo que su contenido y, como no
+       cabía, el navegador lo subía hasta tapar la barra. */
+    align-self: stretch;
+    transform: translateX(-102%); visibility: hidden;
+    transition: transform .3s cubic-bezier(.3, .7, .2, 1), visibility 0s .3s;
+  }
+  /* Escondido de verdad y no solo fuera de la pantalla: asomaba la sombra
+     por el borde y el tabulador se metía en enlaces que no se veían. */
+  aside.abierto { transform: none; visibility: visible; transition-delay: 0s; }
+  .velo { position: fixed; inset: var(--alto-barra) 0 0 0; z-index: 35; background: rgba(20, 18, 14, .35); }
+  main { padding: 20px 16px 60px; }
+  .abrir-indice {
+    display: inline-flex; align-items: center; gap: 10px; margin-bottom: 22px;
+    padding: 7px 12px; border: 1px solid var(--borde); border-radius: 8px; background: var(--caja); font-size: 14.5px;
+  }
+  .abrir-indice b { font: 13px var(--mono); color: var(--tierra); }
+  .pasos { grid-template-columns: 1fr; }
+  .paso.alante { grid-column: auto; }
+}
+
+/* Los diálogos de la cuenta. */
 dialog .dentro { padding: 26px 26px 24px; }
-dialog h2 { margin: 0 0 5px; font-size: 22px; }
-dialog p.sub { margin: 0 0 20px; color: var(--suave); font-size: 14.5px; text-wrap: pretty; }
-
+dialog h2 { margin: 0 0 6px; font-size: 26px; font-weight: 500; }
+dialog p.sub { margin: 0 0 18px; color: var(--suave); font-size: 15px; text-wrap: pretty; }
 /* El trato, dicho antes de pedir nada. Es lo que separa esto de cualquier
    otro registro, así que va arriba y no en letra pequeña al final. */
-.trato {
-  background: var(--codigo-fondo); border: 1px solid var(--borde);
-  border-radius: 8px; padding: 12px 14px; margin: 0 0 20px; font-size: 13.5px;
-}
-.trato b { display: block; margin-bottom: 3px; font-size: 13px; }
+.trato { border-left: 3px solid var(--tierra); padding: 2px 0 2px 14px; margin: 0 0 18px; font-size: 14px; }
+.trato b { display: block; font: italic 500 17px var(--serif); }
 .trato span { color: var(--suave); }
-
-dialog label { display: flex; justify-content: space-between; align-items: baseline;
-  font-size: 13px; color: var(--suave); margin: 14px 0 5px; }
+.letra-legal { margin: -6px 0 6px; font-size: 13px; color: var(--suave); }
+dialog label { display: flex; justify-content: space-between; align-items: baseline; font-size: 13.5px; color: var(--suave); margin: 14px 0 5px; }
 dialog input {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--borde); border-radius: 7px;
-  background: var(--papel); color: var(--tinta); font: inherit; font-size: 15px;
+  width: 100%; padding: 10px 12px; border: 1px solid var(--borde); border-radius: 8px;
+  background: var(--papel); color: var(--tinta); font: 15px var(--sans);
 }
 dialog input:focus { outline: 2px solid var(--azul); outline-offset: -1px; border-color: var(--azul); }
 dialog input.mal { border-color: var(--tierra); }
-.ojo { background: none; border: 0; color: var(--azul); font-size: 12.5px; padding: 0; cursor: pointer; }
-.nota { font-size: 12.5px; color: var(--suave); margin: 5px 0 0; min-height: 1.35em; }
+.ojo { background: none; border: 0; color: var(--azul); font-size: 13px; padding: 0; }
+.nota { font-size: 13px; color: var(--suave); margin: 5px 0 0; min-height: 1.35em; }
 .nota.mal { color: var(--tierra); }
 .nota.bien { color: var(--verde); }
-
 /* La barra de la contraseña mide longitud, que es lo que de verdad cuesta
    romper. No pide mayúsculas ni símbolos: eso empuja a la gente hacia
    contraseñas cortas y retorcidas que se adivinan antes que una frase. */
@@ -190,91 +256,123 @@ dialog input.mal { border-color: var(--tierra); }
 .fuerza.f2 i:nth-child(-n+2) { background: #c98a2e; }
 .fuerza.f3 i:nth-child(-n+3) { background: var(--verde); }
 .fuerza.f4 i { background: var(--verde); }
-
-dialog .fila-botones { display: flex; gap: 10px; margin-top: 22px; align-items: center; }
+/* Borrar la cuenta. La política de privacidad prometía este botón y no
+   existía: la función estaba en cuenta.js sin que nadie la llamara. */
+.peligro { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--borde); }
+.peligro h3 { margin: 0 0 4px; font: 600 15px var(--sans); }
+.peligro p { margin: 0; font-size: 14px; color: var(--suave); text-wrap: pretty; }
+.boton.rojo { border-color: color-mix(in srgb, var(--tierra) 55%, var(--borde)); color: var(--tierra); }
+.boton.rojo:hover { background: color-mix(in srgb, var(--tierra) 8%, transparent); }
+.boton.rojo.lleno { background: var(--tierra); border-color: var(--tierra); color: var(--papel); }
+dialog .fila-botones { display: flex; gap: 10px; margin-top: 22px; align-items: center; flex-wrap: wrap; }
 dialog .error {
   color: var(--tierra); font-size: 14px; margin: 16px 0 0; padding: 10px 12px;
   background: color-mix(in srgb, var(--tierra) 9%, transparent);
-  border-radius: 7px; border: 1px solid color-mix(in srgb, var(--tierra) 28%, transparent);
+  border-radius: 8px; border: 1px solid color-mix(in srgb, var(--tierra) 28%, transparent);
 }
-.pie-dialogo { margin: 16px 0 0; font-size: 13.5px; color: var(--suave); text-align: center; }
-.comoEnlace { background: none; border: 0; color: var(--azul); padding: 0; font: inherit; font-size: 13.5px; cursor: pointer; text-decoration: underline; }
-
+.pie-dialogo { margin: 16px 0 0; font-size: 14px; color: var(--suave); text-align: center; }
 .rescate {
-  font-family: var(--mono); font-size: 19px; letter-spacing: .06em; background: var(--codigo-fondo);
-  border: 1px solid var(--borde); border-radius: 8px; padding: 16px 12px; text-align: center;
-  margin: 16px 0 6px; user-select: all; word-break: break-all;
+  font: 19px var(--mono); letter-spacing: .06em; background: var(--codigo-fondo);
+  border: 1px solid var(--borde); border-radius: 10px; padding: 16px 12px; text-align: center;
+  margin: 16px 0 10px; user-select: all; word-break: break-all;
 }
-.aviso-fuerte {
-  border-left: 3px solid var(--tierra); background: var(--codigo-fondo);
-  border-radius: 0 8px 8px 0; padding: 12px 14px; font-size: 13.5px; margin: 0 0 4px;
-}
-dialog .cargando { opacity: .6; pointer-events: none; }
+.aviso-fuerte { border-left: 3px solid var(--tierra); padding: 2px 0 2px 14px; font-size: 14px; margin: 0 0 4px; color: var(--suave); }
+#zonaCuenta .boton { padding: 6px 12px; font-size: 14px; }
 
-footer.legal {
-  border-top: 1px solid var(--borde); margin-top: 40px;
-  padding: 22px 20px 40px; font-size: 13.5px; color: var(--suave);
-}
-footer.legal div { max-width: 1000px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap; }
-footer.legal a { color: var(--suave); text-decoration: none; }
-footer.legal a:hover { color: var(--tinta); text-decoration: underline; }
+footer.pie .centro { max-width: none; padding: 0 24px; }
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="fila">
-    <a class="marca" href="https://fal-lang.org">Fal<span>.</span></a>
-    <span class="migas">Academia</span>
-    <div class="derecha">
-      <div class="avance" title="Lecciones terminadas">
-        <span id="avanceTexto">0 de 32</span>
-        <span class="barra-avance"><i id="avanceBarra"></i></span>
-      </div>
+<nav class="sitio">
+  <div class="centro fila">
+    <a class="marca" href="https://fal-lang.org/">Fal<span>.</span></a>
+    <div class="enlaces">
+      <a class="opcional" href="https://fal-lang.org/probar.html">Probar</a>
+      <a href="./" aria-current="page">Aprender</a>
       <a href="https://foro.fal-lang.org/">Foro</a>
-      <a class="opcional" href="https://fal-lang.org/probar.html">Probar suelto</a>
+      <a class="opcional" href="https://fal-lang.org/manual.html">Manual</a>
       <span id="zonaCuenta"></span>
     </div>
   </div>
 </nav>
 
 <div class="disposicion">
-  <aside id="indice"></aside>
+  <aside id="indice" aria-label="Lecciones del curso">
+    <div class="avance">
+      <p class="cifra"><b id="avanceHechas">0</b><span id="avanceTexto">de 32 lecciones</span></p>
+      <div class="regla" id="regla" aria-hidden="true"></div>
+      <p class="guardado" id="dondeGuardado">Se guarda en este navegador.</p>
+    </div>
+    <div id="modulos"></div>
+  </aside>
+  <div class="velo" id="velo" hidden></div>
 
   <main>
-    <div class="leccion">
-      <h1 id="lecTitulo">Cargando…</h1>
-      <p class="donde" id="lecDonde"></p>
-      <div class="cuerpo" id="lecCuerpo"></div>
-      <div class="tarea"><b>Tu turno</b><span id="lecTarea"></span></div>
-    </div>
+    <div class="ancho">
+      <button class="abrir-indice" id="abrirIndice" aria-expanded="false" aria-controls="indice">
+        Lecciones <b id="avanceCorto">0/32</b>
+      </button>
 
-    <div class="taller">
-      <div class="panel">
-        <div class="cabeza">Tu programa</div>
-        <textarea id="programa" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+      <article class="leccion">
+        <p class="donde"><span class="modulo-nombre" id="lecModulo"></span><span id="lecNumero"></span></p>
+        <h1 id="lecTitulo">Cargando…</h1>
+        <div class="cuerpo" id="lecCuerpo"></div>
+        <div class="tarea"><b>Tu turno</b><p id="lecTarea"></p></div>
+      </article>
+
+      <div class="hoja">
+        <div class="mesa">
+          <div class="lado-codigo">
+            <div class="cabeza">Tu programa</div>
+            <div class="editor" id="editor">
+              <div class="numeros" aria-hidden="true">1</div>
+              <div class="capas">
+                <pre aria-hidden="true"></pre>
+                <textarea id="programa" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="Tu programa"></textarea>
+              </div>
+            </div>
+            <div class="entradas" id="cajaEntradas" hidden>
+              <label for="entradas">Lo que contestaría quien usa el programa, una respuesta por línea</label>
+              <textarea id="entradas" spellcheck="false" autocomplete="off"></textarea>
+            </div>
+          </div>
+          <div class="lado-salida" id="ladoSalida">
+            <div class="cabeza">Lo que sale</div>
+            <pre class="salida" id="salida"></pre>
+            <div class="dibujo" id="lienzo"></div>
+          </div>
+        </div>
+        <div class="barra">
+          <button class="boton lleno" id="comprobar" disabled>Cargando el lenguaje…</button>
+          <span class="estado" id="estado"></span>
+          <button class="enlace-boton lejos" id="pista" type="button">Ver la solución</button>
+        </div>
+        <div class="solucion" id="solucion" hidden>
+          <div class="titulo">Una solución <button class="boton gris pequeno" id="usarSolucion" type="button">Ponerla en el editor</button></div>
+          <pre id="textoSolucion"></pre>
+        </div>
       </div>
-      <div class="panel">
-        <div class="cabeza">Lo que sale</div>
-        <pre class="salida" id="salida"><span class="aviso">Escribe tu solución y pulsa «Comprobar».</span></pre>
-        <div id="lienzo" hidden></div>
-      </div>
-    </div>
 
-    <div class="panel" id="cajaEntradas" hidden style="margin-top:14px">
-      <div class="cabeza">Respuestas preparadas, una por línea</div>
-      <textarea id="entradas" spellcheck="false" autocomplete="off"></textarea>
-    </div>
+      <div class="veredicto" id="veredicto" role="status" aria-live="polite"></div>
 
-    <div class="acciones">
-      <button class="btn lleno" id="comprobar" disabled>Cargando el lenguaje…</button>
-      <button class="btn gris" id="anterior">Anterior</button>
-      <button class="btn gris" id="siguiente">Siguiente</button>
-      <button class="btn gris" id="pista">Ver la solución</button>
-      <span class="veredicto" id="veredicto"></span>
+      <nav class="pasos" aria-label="Otras lecciones">
+        <a class="paso atras" id="anterior" href="#"><small>Anterior</small><span></span></a>
+        <a class="paso alante" id="siguiente" href="#"><small>Siguiente</small><span></span></a>
+      </nav>
     </div>
   </main>
 </div>
+
+<footer class="pie">
+  <div class="centro">
+    <a href="https://fal-lang.org/aviso-legal.html">Aviso legal</a>
+    <a href="https://fal-lang.org/privacidad.html">Privacidad</a>
+    <a href="https://fal-lang.org/cookies.html">Cookies</a>
+    <a href="https://github.com/NissanBoss/fal-academia">Código del curso</a>
+    <span class="lejos">Treinta y dos lecciones, ninguna con trampa.</span>
+  </div>
+</footer>
 
 <dialog id="dialogoCuenta">
   <form method="dialog" class="dentro" id="formCuenta">
@@ -285,6 +383,8 @@ footer.legal a:hover { color: var(--tinta); text-decoration: underline; }
       <b>Sin correo, sin nombre real, sin nada.</b>
       <span>Elige un nombre cualquiera y una contraseña. No guardamos ningún dato que diga quién eres.</span>
     </div>
+    <p class="letra-legal" id="dlgLegal">Al crearla aceptas las <a href="https://fal-lang.org/aviso-legal.html#condiciones-de-uso" target="_blank">condiciones de uso</a>.
+    Qué se guarda y cómo lo borras está en la <a href="https://fal-lang.org/privacidad.html" target="_blank">política de privacidad</a>.</p>
 
     <label for="dlgUsuario">Nombre</label>
     <input id="dlgUsuario" autocomplete="username" minlength="3" maxlength="24"
@@ -302,8 +402,8 @@ footer.legal a:hover { color: var(--tinta); text-decoration: underline; }
     <p class="error" id="dlgError" hidden></p>
 
     <div class="fila-botones">
-      <button class="btn lleno" id="dlgAceptar" type="submit">Crear cuenta</button>
-      <button class="btn gris" type="button" id="dlgCancelar">Ahora no</button>
+      <button class="boton lleno" id="dlgAceptar" type="submit">Crear cuenta</button>
+      <button class="boton gris" type="button" id="dlgCancelar">Ahora no</button>
     </div>
     <p class="pie-dialogo" id="dlgPie"></p>
   </form>
@@ -320,9 +420,40 @@ footer.legal a:hover { color: var(--tinta); text-decoration: underline; }
       la cuenta no se recupera de ninguna manera.
     </p>
     <div class="fila-botones">
-      <button class="btn lleno" id="rescateCopiar">Copiar</button>
-      <button class="btn" id="rescateBajar">Descargar</button>
-      <button class="btn gris" id="rescateHecho" disabled title="Cópialo o descárgalo antes">Ya está</button>
+      <button class="boton lleno" id="rescateCopiar">Copiar</button>
+      <button class="boton" id="rescateBajar">Descargar</button>
+      <button class="boton gris" id="rescateHecho" disabled title="Cópialo o descárgalo antes">Ya está</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dialogoYo">
+  <div class="dentro">
+    <h2 id="yoNombre"></h2>
+    <p class="sub">Tu progreso se guarda en esta cuenta y en este navegador.</p>
+    <div class="fila-botones">
+      <button class="boton" id="yoSalir">Salir de la cuenta</button>
+      <button class="boton gris" id="yoBajar">Descargar mis datos</button>
+      <button class="boton gris" id="yoCerrar">Cerrar</button>
+    </div>
+
+    <div class="peligro">
+      <h3>Borrar la cuenta</h3>
+      <p>Se borra de verdad: el nombre, la contraseña, el progreso y el texto de
+      lo que escribiste en el foro. No se puede deshacer. Lo que llevas del curso
+      se queda en este navegador.</p>
+      <form id="formBorrar" hidden>
+        <label for="borrarNombre">Escribe tu nombre para confirmarlo</label>
+        <input id="borrarNombre" autocomplete="off" spellcheck="false" autocapitalize="off">
+        <p class="error" id="borrarError" hidden></p>
+        <div class="fila-botones">
+          <button class="boton rojo lleno" id="borrarSi" type="submit" disabled>Borrar para siempre</button>
+          <button class="boton gris" type="button" id="borrarNo">Mejor no</button>
+        </div>
+      </form>
+      <div class="fila-botones" id="filaBorrar">
+        <button class="boton rojo pequeno" id="borrarEmpezar">Borrar mi cuenta…</button>
+      </div>
     </div>
   </div>
 </dialog>
@@ -350,22 +481,30 @@ footer.legal a:hover { color: var(--tinta); text-decoration: underline; }
     <p class="error" id="olvError" hidden></p>
 
     <div class="fila-botones">
-      <button class="btn lleno" id="olvAceptar" type="submit">Cambiar la contraseña</button>
-      <button class="btn gris" type="button" id="olvCancelar">Volver</button>
+      <button class="boton lleno" id="olvAceptar" type="submit">Cambiar la contraseña</button>
+      <button class="boton gris" type="button" id="olvCancelar">Volver</button>
     </div>
   </form>
 </dialog>
 
 <script type="module">
 import { LECCIONES, MODULOS } from "./curso.js";
-import { cuenta, juntarProgresos } from "./cuenta.js";
+import { cuenta, juntarProgresos, API } from "./cuenta.js";
+import { pintar, montarEditor, ponerDibujo } from "./pintar.js";
 
 const $ = (id) => document.getElementById(id);
-const $programa = $("programa");
 const $entradas = $("entradas");
 const $salida = $("salida");
 const $lienzo = $("lienzo");
 const $veredicto = $("veredicto");
+const $comprobar = $("comprobar");
+const editor = montarEditor($("editor"), alEscribir);
+const $programa = editor.area;
+
+const AYUDA_TECLAS = '<span class="teclas"><kbd>Ctrl</kbd> + <kbd>Intro</kbd> también comprueba</span>';
+// Las lecciones donde se acaba un módulo, para poder decirlo al acertarlas.
+const ULTIMA_DEL_MODULO = new Set(MODULOS.map((_, m) =>
+  LECCIONES.reduce((ultima, l, i) => l.modulo === m ? i : ultima, -1)));
 
 let actual = 0;
 let hechas = new Set();
@@ -374,6 +513,7 @@ let borradores = {};
 // haberlo sacado por tu cuenta, y por eso se apunta aquí y no se pregunta.
 let mirados = new Set();
 let dentro = false;
+let usuarioDentro = "";
 
 // --- Guardar el progreso -------------------------------------------------
 //
@@ -417,54 +557,103 @@ function guardar() {
 // --- Pintar --------------------------------------------------------------
 
 function pintarIndice() {
-  const aside = $("indice");
-  aside.innerHTML = "";
+  const caja = $("modulos");
+  caja.innerHTML = "";
   MODULOS.forEach((nombre, m) => {
+    const lecciones = LECCIONES.map((l, i) => i).filter(i => LECCIONES[i].modulo === m);
+    const terminadas = lecciones.filter(i => hechas.has(i)).length;
+    const seccion = document.createElement("section");
+    seccion.className = "modulo" + (terminadas === lecciones.length ? " hecho" : "");
     const h = document.createElement("h2");
     h.textContent = nombre;
-    aside.appendChild(h);
+    const cuantas = document.createElement("span");
+    cuantas.className = "cuantas";
+    cuantas.textContent = terminadas + "/" + lecciones.length;
+    cuantas.title = terminadas + " de " + lecciones.length + " terminadas";
+    h.appendChild(cuantas);
+    seccion.appendChild(h);
     const ol = document.createElement("ol");
-    LECCIONES.forEach((l, i) => {
-      if (l.modulo !== m) return;
+    for (const i of lecciones) {
       const li = document.createElement("li");
       const a = document.createElement("a");
       a.href = "#" + (i + 1);
-      a.className = i === actual ? "actual" : "";
-      a.innerHTML = '<span class="marca-hecha">' + (hechas.has(i) ? "✓" : "") + "</span>";
-      a.appendChild(document.createTextNode(l.titulo));
-      a.onclick = (ev) => { ev.preventDefault(); ir(i); };
+      if (hechas.has(i)) a.className = "hecha";
+      if (i === actual) a.setAttribute("aria-current", "page");
+      const n = document.createElement("span");
+      n.className = "n";
+      // La marca de hecha ocupa el sitio del número y no va al final: así
+      // la columna de la izquierda dice de un vistazo por dónde vas.
+      n.textContent = hechas.has(i) ? "✓" : String(i + 1);
+      a.appendChild(n);
+      a.appendChild(document.createTextNode(LECCIONES[i].titulo));
+      if (hechas.has(i)) a.appendChild(Object.assign(document.createElement("span"),
+        { className: "para-lectores", textContent: " (hecha)" }));
+      a.onclick = (ev) => { ev.preventDefault(); ir(i); cerrarIndice(); };
       li.appendChild(a);
       ol.appendChild(li);
-    });
-    aside.appendChild(ol);
+    }
+    seccion.appendChild(ol);
+    caja.appendChild(seccion);
   });
 }
 
 function pintarAvance() {
-  $("avanceTexto").textContent = hechas.size + " de " + LECCIONES.length;
-  $("avanceBarra").style.width = (hechas.size / LECCIONES.length * 100) + "%";
+  $("avanceHechas").textContent = hechas.size;
+  $("avanceTexto").textContent = "de " + LECCIONES.length + (hechas.size === 1 ? " lección hecha" : " lecciones hechas");
+  $("avanceCorto").textContent = hechas.size + "/" + LECCIONES.length;
+  const regla = $("regla");
+  regla.innerHTML = "";
+  MODULOS.forEach((_, m) => {
+    const grupo = document.createElement("span");
+    grupo.className = "grupo";
+    LECCIONES.forEach((l, i) => {
+      if (l.modulo !== m) return;
+      const marca = document.createElement("i");
+      marca.className = (hechas.has(i) ? "hecha" : "") + (i === actual ? " actual" : "");
+      grupo.appendChild(marca);
+    });
+    grupo.style.setProperty("--n", grupo.children.length);
+    regla.appendChild(grupo);
+  });
+  $("dondeGuardado").textContent = dentro
+    ? "Se guarda en tu cuenta, " + usuarioDentro + ", y sigue donde lo dejes desde cualquier sitio."
+    : "Se guarda en este navegador. Con una cuenta lo tendrías también en el móvil o en clase.";
 }
 
-function pintar() {
+function pintarPaso(enlace, i) {
+  enlace.hidden = i < 0 || i >= LECCIONES.length;
+  if (enlace.hidden) return;
+  enlace.href = "#" + (i + 1);
+  enlace.querySelector("span").textContent = LECCIONES[i].titulo;
+  enlace.onclick = (ev) => { ev.preventDefault(); ir(i); };
+}
+
+function pintarLeccion() {
   const l = LECCIONES[actual];
   $("lecTitulo").textContent = l.titulo;
-  $("lecDonde").textContent = MODULOS[l.modulo] + " · lección " + (actual + 1) + " de " + LECCIONES.length;
+  $("lecModulo").textContent = MODULOS[l.modulo];
+  $("lecNumero").textContent = "Lección " + (actual + 1) + " de " + LECCIONES.length;
   $("lecCuerpo").innerHTML = l.cuerpo;
-  $("lecTarea").innerHTML = " " + l.tarea;
+  // Los ejemplos del curso vienen en texto plano y se pintan aquí, con los
+  // mismos colores que el editor de debajo.
+  $("lecCuerpo").querySelectorAll("pre").forEach(pre => { pre.innerHTML = pintar(pre.textContent); });
+  $("lecTarea").innerHTML = l.tarea;
 
   const guardado = borradores[actual];
-  $programa.value = typeof guardado === "string" && guardado !== "" ? guardado : (l.inicial || "");
+  editor.poner(typeof guardado === "string" && guardado !== "" ? guardado : (l.inicial || ""));
   $("cajaEntradas").hidden = !l.entradas;
   $entradas.value = l.entradas || "";
 
-  $salida.innerHTML = '<span class="aviso">Escribe tu solución y pulsa «Comprobar».</span>';
-  $lienzo.hidden = true;
+  $salida.className = "salida";
+  $salida.innerHTML = '<span class="aviso">Aquí saldrá lo que escriba tu programa.</span>';
+  $("ladoSalida").classList.remove("vieja");
   $lienzo.innerHTML = "";
-  $veredicto.textContent = "";
-  $veredicto.className = "veredicto";
-  $("anterior").disabled = actual === 0;
-  $("siguiente").disabled = actual === LECCIONES.length - 1;
+  $veredicto.innerHTML = "";
+  $("solucion").hidden = true;
+  $("pista").hidden = !l.solucion;
   $("pista").textContent = "Ver la solución";
+  pintarPaso($("anterior"), actual - 1);
+  pintarPaso($("siguiente"), actual + 1);
   pintarIndice();
   pintarAvance();
   document.title = l.titulo + " · Academia de Fal";
@@ -472,46 +661,107 @@ function pintar() {
 
 function ir(i) {
   if (i < 0 || i >= LECCIONES.length) return;
+  if (corriendo) parar();
   actual = i;
   history.replaceState(null, "", "#" + (i + 1));
   guardar();
-  pintar();
+  pintarLeccion();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
+// El índice del móvil.
+function cerrarIndice() {
+  $("indice").classList.remove("abierto");
+  $("velo").hidden = true;
+  $("abrirIndice").setAttribute("aria-expanded", "false");
+}
+$("abrirIndice").onclick = () => {
+  $("indice").classList.add("abierto");
+  $("velo").hidden = false;
+  $("abrirIndice").setAttribute("aria-expanded", "true");
+  $("indice").querySelector('[aria-current="page"]')?.scrollIntoView({ block: "center" });
+};
+$("velo").onclick = cerrarIndice;
+addEventListener("keydown", (ev) => { if (ev.key === "Escape") cerrarIndice(); });
 
 // --- El intérprete -------------------------------------------------------
 
 let trabajador = null;
 let corriendo = false;
 let recogido = "";
+let pendiente = false;
+const TOPE_SALIDA = 20000;
 
 function arrancarInterprete() {
   trabajador = new Worker("trabajador.js");
   trabajador.onmessage = (ev) => {
     const m = ev.data || {};
     if (m.tipo === "listo") {
-      $("comprobar").disabled = false;
-      $("comprobar").textContent = "Comprobar";
+      $comprobar.disabled = false;
+      botonEn("comprobar");
       return;
     }
+    if (!corriendo) return;
     if (m.tipo === "salida") {
       recogido += m.texto;
-      $salida.textContent = recogido;
+      // Un bucle sin fin que escribe en cada vuelta mandaba millones de
+      // mensajes y la pestaña entera se caía antes de poder pulsar Parar.
+      // Ningún ejercicio del curso escribe ni la centésima parte de esto.
+      if (recogido.length > TOPE_SALIDA) {
+        recogido = recogido.slice(0, TOPE_SALIDA);
+        parar("Ha escrito demasiado y lo he cortado.",
+          "Parece un bucle que no acaba: mira si dentro cambia lo que mira la condición.");
+        return;
+      }
+      if (!pendiente) {
+        pendiente = true;
+        requestAnimationFrame(() => { pendiente = false; if (corriendo) $salida.textContent = recogido; });
+      }
       return;
     }
     if (m.tipo === "fin") {
       corriendo = false;
+      botonEn("comprobar");
       terminar(m.error, m.dibujo);
     }
   };
   trabajador.onerror = () => {
-    $("comprobar").disabled = true;
-    $("comprobar").textContent = "No cargó el lenguaje";
+    $comprobar.disabled = true;
+    $comprobar.textContent = "No cargó el lenguaje";
   };
 }
 
+function botonEn(modo) {
+  $comprobar.textContent = modo === "parar" ? "Parar" : "Comprobar";
+  $comprobar.classList.toggle("gris", modo === "parar");
+  $("estado").innerHTML = modo === "parar" ? "Ejecutando…" : AYUDA_TECLAS;
+}
+
+// Un bucle que no acaba no se puede parar desde dentro. Se tira el hilo
+// entero y se levanta otro. La lección de «mientras» avisa de que esto
+// pasa, y en la versión de antes la página se quedaba diciendo
+// «Ejecutando…» para siempre.
+function parar(titulo, detalle) {
+  trabajador.terminate();
+  corriendo = false;
+  $salida.textContent = recogido + (recogido.endsWith("\n") || !recogido ? "" : "\n") + "(parado)";
+  $comprobar.disabled = true;
+  $comprobar.textContent = "Cargando el lenguaje…";
+  $comprobar.classList.remove("gris");
+  $("estado").textContent = "";
+  ponerVeredicto("mal", titulo || "Lo has parado.", detalle ||
+    "Si no acababa nunca, mira si dentro del bucle cambia lo que mira la condición.");
+  arrancarInterprete();
+}
+
+function alEscribir() {
+  borradores[actual] = $programa.value;
+  $("ladoSalida").classList.add("vieja");
+  guardar();
+}
+
 function comprobar() {
-  if (corriendo) return;
+  if (corriendo) { parar(); return; }
   const l = LECCIONES[actual];
   const programa = $programa.value;
 
@@ -520,58 +770,123 @@ function comprobar() {
   // sería correcta y no habría aprendido lo que la lección enseña.
   for (const palabra of l.debeUsar || []) {
     if (!new RegExp("\\b" + palabra + "\\b").test(programa)) {
-      $veredicto.className = "veredicto mal";
-      $veredicto.textContent = 'Te falta usar "' + palabra + '" en este ejercicio.';
+      ponerVeredicto("mal", 'Te falta usar «' + palabra + '».',
+        "En este ejercicio la gracia está en hacerlo con esa palabra, aunque salga lo mismo de otra forma.");
       return;
     }
   }
 
   corriendo = true;
   recogido = "";
+  $salida.className = "salida";
   $salida.textContent = "";
-  $lienzo.hidden = true;
+  $("ladoSalida").classList.remove("vieja");
   $lienzo.innerHTML = "";
-  $veredicto.textContent = "";
-  $veredicto.className = "veredicto";
-  $("comprobar").textContent = "Ejecutando…";
+  $veredicto.innerHTML = "";
+  botonEn("parar");
   trabajador.postMessage({ tipo: "correr", programa, respuestas: $entradas.value });
 }
 
+function limpia(t) {
+  return String(t).trim().split("\n").map((x) => x.trim()).join("\n").toLowerCase();
+}
+
 function igualan(a, b) {
-  const limpia = (t) => String(t).trim().split("\n").map((x) => x.trim()).join("\n").toLowerCase();
   return limpia(a) === limpia(b);
 }
 
+function ponerVeredicto(tipo, titulo, detalle, extra) {
+  $veredicto.innerHTML = "";
+  const caja = document.createElement("div");
+  caja.className = "caja " + tipo;
+  if (tipo === "bien") {
+    caja.insertAdjacentHTML("beforeend",
+      '<span class="sello" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9"/></svg></span>');
+  }
+  const texto = document.createElement("div");
+  texto.appendChild(Object.assign(document.createElement("p"), { className: "titulo", textContent: titulo }));
+  if (detalle) texto.appendChild(Object.assign(document.createElement("p"), { className: "detalle", textContent: detalle }));
+  caja.appendChild(texto);
+  if (extra) caja.appendChild(extra);
+  $veredicto.appendChild(caja);
+}
+
+// Las dos salidas, línea a línea, con la primera distinta marcada. Todo va
+// con textContent: lo que escribe un programa puede llevar cualquier cosa.
+function comparacion(sale, espera) {
+  const a = String(sale).replace(/\n+$/, "").split("\n");
+  const b = String(espera).split("\n");
+  let primera = -1;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if ((a[i] ?? "").trim().toLowerCase() !== (b[i] ?? "").trim().toLowerCase()) { primera = i; break; }
+  }
+  const lado = (titulo, lineas) => {
+    const col = document.createElement("div");
+    col.appendChild(Object.assign(document.createElement("span"), { className: "versalitas", textContent: titulo }));
+    const pre = document.createElement("pre");
+    const total = Math.max(a.length, b.length);
+    for (let i = 0; i < total; i++) {
+      const linea = document.createElement("span");
+      if (i >= lineas.length) { linea.className = "falta"; linea.textContent = i === primera ? "(nada)" : ""; }
+      else linea.textContent = lineas[i] === "" ? " " : lineas[i];
+      if (i === primera) linea.className += " difiere";
+      pre.appendChild(linea);
+    }
+    col.appendChild(pre);
+    return col;
+  };
+  const caja = document.createElement("div");
+  caja.className = "comparar";
+  caja.appendChild(lado("Sale", a));
+  caja.appendChild(lado("Debería salir", b));
+  return { caja, primera };
+}
+
 function terminar(error, dibujo) {
-  $("comprobar").textContent = "Comprobar";
   const l = LECCIONES[actual];
 
-  if (dibujo) {
-    $lienzo.innerHTML = dibujo;
-    $lienzo.hidden = false;
-  }
+  if (dibujo) ponerDibujo($lienzo, dibujo);
   if (error) {
-    $salida.innerHTML = '<span class="malo"></span>';
-    $salida.firstChild.textContent = error;
-    $veredicto.className = "veredicto mal";
-    $veredicto.textContent = "El programa no llegó a terminar. Lee lo que dice el error.";
+    $salida.className = "salida error";
+    $salida.textContent = (recogido ? recogido + "\n" : "") + error.replace(/^\n+/, "");
+    ponerVeredicto("mal", "El programa no llegó a terminar.", "Lee lo que dice el error: casi siempre dice la línea y qué esperaba encontrar.");
     return;
   }
+  if (recogido === "" && !dibujo) $salida.innerHTML = '<span class="aviso">El programa terminó sin escribir nada.</span>';
 
   const acertado = l.dibuja ? !!dibujo : igualan(recogido, l.espera);
   if (!acertado) {
-    $veredicto.className = "veredicto mal";
-    $veredicto.textContent = l.dibuja
-      ? "No ha salido ningún dibujo. ¿Has usado camina y gira?"
-      : "Todavía no es eso. Compara lo que sale con lo que pide el ejercicio.";
-    if (l.pista) $veredicto.textContent += " " + l.pista;
+    if (l.dibuja) {
+      ponerVeredicto("mal", "No ha salido ningún dibujo.", "¿Has usado camina y gira?" + (l.pista ? " " + l.pista : ""));
+      return;
+    }
+    const { caja, primera } = comparacion(recogido, l.espera);
+    const donde = primera >= 0 ? "La primera diferencia está en la línea " + (primera + 1) + "." : "";
+    ponerVeredicto("mal", "Todavía no es eso.", [donde, l.pista].filter(Boolean).join(" "), caja);
     return;
   }
 
-  $veredicto.className = "veredicto bien";
-  $veredicto.textContent = actual === LECCIONES.length - 1
-    ? "Hecho. Has terminado el curso entero."
-    : "Bien. Pasa a la siguiente.";
+  const ultima = actual === LECCIONES.length - 1;
+  let detalle = "";
+  if (ultima) detalle = "Has terminado el curso entero. Lo que sigue es el manual, y escribir algo tuyo.";
+  else if (ULTIMA_DEL_MODULO.has(actual)) {
+    detalle = "Con esta terminas «" + MODULOS[l.modulo] + "».";
+    if (l.modulo === 0) detalle += " Ya puedes escribir en el foro.";
+  }
+  let siguiente = null;
+  if (!ultima) {
+    siguiente = document.createElement("a");
+    siguiente.className = "boton lleno";
+    siguiente.href = "#" + (actual + 2);
+    siguiente.textContent = "Siguiente: " + LECCIONES[actual + 1].titulo + " →";
+    siguiente.onclick = (ev) => { ev.preventDefault(); ir(actual + 1); };
+  } else {
+    siguiente = document.createElement("a");
+    siguiente.className = "boton lleno";
+    siguiente.href = "https://fal-lang.org/manual.html";
+    siguiente.textContent = "Ir al manual →";
+  }
+  ponerVeredicto("bien", ultima ? "Hecho." : "Bien hecho.", detalle, siguiente);
   if (!hechas.has(actual)) {
     hechas.add(actual);
     guardar();
@@ -579,18 +894,40 @@ function terminar(error, dibujo) {
   }
 }
 
+// --- La solución ---------------------------------------------------------
+
+$("pista").onclick = () => {
+  const l = LECCIONES[actual];
+  if (!l.solucion) return;
+  const caja = $("solucion");
+  if (!caja.hidden) { caja.hidden = true; $("pista").textContent = "Ver la solución"; return; }
+  $("textoSolucion").innerHTML = pintar(l.solucion);
+  caja.hidden = false;
+  $("pista").textContent = "Esconder la solución";
+  mirados.add(actual);
+  guardar();
+};
+$("usarSolucion").onclick = () => {
+  const l = LECCIONES[actual];
+  editor.poner(l.solucion);
+  alEscribir();
+  $programa.focus();
+};
+
 // --- La cuenta -----------------------------------------------------------
 
 function pintarCuenta(usuario) {
   dentro = !!usuario;
+  usuarioDentro = usuario || "";
   const zona = $("zonaCuenta");
   zona.innerHTML = "";
   const b = document.createElement("button");
-  b.className = dentro ? "btn gris" : "btn";
+  b.className = dentro ? "boton gris" : "boton";
   b.textContent = dentro ? usuario : "Guardar progreso";
-  b.onclick = dentro ? salirDeLaCuenta : abrirDialogo;
-  b.title = dentro ? "Pulsa para salir de la cuenta" : "Crea una cuenta para seguir en otro aparato";
+  b.onclick = dentro ? abrirYo : abrirDialogo;
+  b.title = dentro ? "Tu cuenta" : "Crea una cuenta para seguir en otro aparato";
   zona.appendChild(b);
+  pintarAvance();
 }
 
 let modoRegistro = true;
@@ -610,15 +947,14 @@ function ponerModo() {
   $("dlgAceptar").textContent = modoRegistro ? "Crear cuenta" : "Entrar";
   $("dlgClave").autocomplete = modoRegistro ? "new-password" : "current-password";
   $("dlgTrato").hidden = !modoRegistro;
+  $("dlgLegal").hidden = !modoRegistro;
   $("fuerza").hidden = !modoRegistro;
   $("dlgError").hidden = true;
   $("notaUsuario").textContent = "";
   $("notaClave").textContent = "";
 
   // El pie cambia de sentido según el modo, y en el de entrar es donde vive
-  // la salida para quien ha olvidado la contraseña. Antes esa puerta no
-  // estaba en ningún sitio: el servidor sabía recuperar cuentas y la página
-  // no lo ofrecía, así que el código de rescate no servía para nada.
+  // la salida para quien ha olvidado la contraseña.
   const pie = $("dlgPie");
   pie.innerHTML = "";
   if (modoRegistro) {
@@ -635,7 +971,7 @@ function ponerModo() {
 function comoEnlace(texto, alPulsar) {
   const b = document.createElement("button");
   b.type = "button";
-  b.className = "comoEnlace";
+  b.className = "enlace-boton";
   b.textContent = texto;
   b.onclick = alPulsar;
   return b;
@@ -655,9 +991,7 @@ function ponerOjo(boton, campo) {
 ponerOjo("verClave", "dlgClave");
 ponerOjo("verClaveNueva", "olvClave");
 
-// La medida es la longitud, no los símbolos raros. Exigir mayúsculas y
-// números empuja a la gente hacia contraseñas cortas y retorcidas, que se
-// adivinan mucho antes que una frase larga y fácil de recordar.
+// La medida es la longitud, no los símbolos raros.
 function pintarFuerza(clave, elemento, nota) {
   const n = clave.length;
   const nivel = n === 0 ? 0 : n < 8 ? 1 : n < 12 ? 2 : n < 16 ? 3 : 4;
@@ -762,10 +1096,9 @@ $("formCuenta").addEventListener("submit", async (ev) => {
   boton.disabled = true;
   boton.textContent = "Un momento…";
 
-  // La prueba de trabajo tarda un par de segundos y hasta ahora no se veía:
-  // el botón ponía "un momento" y ya. Enseñar los intentos que lleva es la
-  // diferencia entre una página que está haciendo algo y una que parece
-  // colgada, y de paso deja ver que la comprobacion existe.
+  // La prueba de trabajo tarda un par de segundos. Enseñar los intentos que
+  // lleva es la diferencia entre una página que está haciendo algo y una
+  // que parece colgada.
   const avisar = (van) => {
     boton.textContent = "Comprobando… " + Math.round(van / 1000) + " mil intentos";
   };
@@ -834,7 +1167,7 @@ $("rescateCopiar").onclick = async () => {
 $("rescateBajar").onclick = () => {
   const texto =
     "Código de rescate de tu cuenta en la academia de Fal\n\n" +
-    "Usuario: " + (document.querySelector("#zonaCuenta button")?.textContent || "") + "\n" +
+    "Usuario: " + usuarioDentro + "\n" +
     "Código:  " + $("textoRescate").textContent + "\n\n" +
     "Sirve para recuperar la cuenta si olvidas la contraseña, en\n" +
     "https://aprende.fal-lang.org, en «He olvidado la contraseña».\n" +
@@ -850,11 +1183,80 @@ $("rescateBajar").onclick = () => {
 
 $("rescateHecho").onclick = () => $("dialogoRescate").close();
 
-async function salirDeLaCuenta() {
-  if (!confirm("¿Salir de la cuenta? Tu progreso se queda guardado en ella.")) return;
-  try { await cuenta.salir(); } catch (e) {}
-  pintarCuenta(null);
+// Antes pulsar tu nombre sacaba un confirm() de salir y no había más.
+function abrirYo() {
+  $("yoNombre").textContent = usuarioDentro;
+  $("formBorrar").hidden = true;
+  $("filaBorrar").hidden = false;
+  $("dialogoYo").showModal();
 }
+$("yoCerrar").onclick = () => $("dialogoYo").close();
+// Todo lo que hay de ti, en un archivo que se puede leer y llevarse a otro
+// sitio. La política de privacidad lo prometía y solo se podía mirar.
+$("yoBajar").onclick = async () => {
+  const boton = $("yoBajar");
+  boton.disabled = true;
+  try {
+    const progreso = await cuenta.bajarProgreso();
+    let foro = null;
+    try {
+      const r = await fetch(API + "/api/foro/perfil/" + encodeURIComponent(usuarioDentro), { credentials: "include" });
+      if (r.ok) foro = await r.json();
+    } catch (e) {}
+    const todo = {
+      cuenta: usuarioDentro,
+      descargado: new Date().toISOString(),
+      progreso,
+      foro,
+      nota: "La contraseña y el código de rescate no van aquí: no los tenemos, solo una huella con la que comprobarlos.",
+    };
+    const enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(new Blob([JSON.stringify(todo, null, 2)], { type: "application/json" }));
+    enlace.download = "fal-mis-datos-" + usuarioDentro + ".json";
+    enlace.click();
+    URL.revokeObjectURL(enlace.href);
+  } catch (e) {
+    boton.textContent = "No se pudo, prueba otra vez";
+    setTimeout(() => { boton.textContent = "Descargar mis datos"; }, 2500);
+  }
+  boton.disabled = false;
+};
+$("yoSalir").onclick = async () => {
+  try { await cuenta.salir(); } catch (e) {}
+  $("dialogoYo").close();
+  pintarCuenta(null);
+};
+$("borrarEmpezar").onclick = () => {
+  $("filaBorrar").hidden = true;
+  $("formBorrar").hidden = false;
+  $("borrarNombre").value = "";
+  $("borrarSi").disabled = true;
+  $("borrarError").hidden = true;
+  $("borrarNombre").focus();
+};
+$("borrarNo").onclick = () => {
+  $("formBorrar").hidden = true;
+  $("filaBorrar").hidden = false;
+};
+// Escribir el nombre y no un "sí": un sí se pulsa sin leer.
+$("borrarNombre").oninput = () => {
+  $("borrarSi").disabled = $("borrarNombre").value.trim().toLowerCase() !== usuarioDentro.toLowerCase();
+};
+$("formBorrar").onsubmit = async (ev) => {
+  ev.preventDefault();
+  $("borrarSi").disabled = true;
+  $("borrarSi").textContent = "Borrando…";
+  try {
+    await cuenta.borrarme();
+    $("dialogoYo").close();
+    pintarCuenta(null);
+  } catch (e) {
+    $("borrarError").textContent = e.message || "No se pudo borrar. Prueba otra vez en un rato.";
+    $("borrarError").hidden = false;
+    $("borrarSi").disabled = false;
+  }
+  $("borrarSi").textContent = "Borrar para siempre";
+};
 
 // Al entrar se juntan los dos progresos en vez de que uno pise al otro.
 // Alguien puede haber avanzado en este navegador sin cuenta y tener otro
@@ -868,44 +1270,28 @@ async function sincronizar() {
     if (Number.isInteger(junto.actual)) actual = junto.actual;
     guardar();
     await cuenta.subirProgreso(comoObjeto());
-    pintar();
+    pintarLeccion();
   } catch (e) {}
 }
 
 // --- Enganchar todo ------------------------------------------------------
 
-$("comprobar").onclick = comprobar;
-$("anterior").onclick = () => ir(actual - 1);
-$("siguiente").onclick = () => ir(actual + 1);
-$("pista").onclick = () => {
-  const l = LECCIONES[actual];
-  if (!l.solucion) return;
-  $programa.value = l.solucion;
-  borradores[actual] = l.solucion;
-  mirados.add(actual);
-  guardar();
-  $("pista").textContent = "Ahí la tienes";
-};
+$comprobar.onclick = comprobar;
 
-$programa.addEventListener("input", () => {
-  borradores[actual] = $programa.value;
-  guardar();
-});
-
-// Ctrl+Enter para comprobar sin soltar el teclado.
+// Ctrl+Intro para comprobar sin soltar el teclado.
 $programa.addEventListener("keydown", (ev) => {
-  if ((ev.ctrlKey || ev.metaKey) && ev.key === "Enter") { ev.preventDefault(); comprobar(); }
+  if ((ev.ctrlKey || ev.metaKey) && ev.key === "Enter") { ev.preventDefault(); if (!$comprobar.disabled) comprobar(); }
 });
 
 window.addEventListener("hashchange", () => {
   const n = parseInt(location.hash.slice(1), 10);
-  if (n >= 1 && n <= LECCIONES.length && n - 1 !== actual) { actual = n - 1; pintar(); }
+  if (n >= 1 && n <= LECCIONES.length && n - 1 !== actual) { actual = n - 1; pintarLeccion(); }
 });
 
 leerLocal();
 const pedida = parseInt(location.hash.slice(1), 10);
 if (pedida >= 1 && pedida <= LECCIONES.length) actual = pedida - 1;
-pintar();
+pintarLeccion();
 arrancarInterprete();
 
 cuenta.quienSoy().then((r) => {
@@ -913,16 +1299,6 @@ cuenta.quienSoy().then((r) => {
   if (r.dentro) sincronizar();
 });
 </script>
-
-
-<footer class="legal">
-  <div>
-    <a href="https://fal-lang.org/aviso-legal.html">Aviso legal</a>
-    <a href="https://fal-lang.org/privacidad.html">Privacidad</a>
-    <a href="https://fal-lang.org/cookies.html">Cookies</a>
-    <a href="https://github.com/NissanBoss/Fal">Codigo</a>
-  </div>
-</footer>
 
 </body>
 </html>

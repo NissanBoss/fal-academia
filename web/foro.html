@@ -9,6 +9,9 @@
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="fuentes/newsreader.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16171a" media="(prefers-color-scheme: dark)">
 <meta property="og:url" content="https://foro.fal-lang.org/">
 <meta property="og:image" content="https://foro.fal-lang.org/vista-previa-foro.png">
 <meta property="og:image:width" content="1200">
@@ -18,182 +21,243 @@
 <meta property="og:title" content="Foro de Fal">
 <meta property="og:description" content="Dudas, proyectos e ideas alrededor de un lenguaje de programación en español.">
 <meta property="og:type" content="website">
+<link rel="stylesheet" href="comun.css">
 <style>
-:root {
-  --papel: #fbfaf7; --caja: #ffffff; --tinta: #1a1a18; --suave: #5f5c55;
-  --borde: #e2ded4; --azul: #1c4f8b; --tierra: #9c4420; --verde: #216e3f;
-  --codigo-fondo: #f6f4ef;
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", monospace;
+main { padding: 44px 0 80px; min-height: 60vh; }
+.cargando { color: var(--suave); font: italic 18px var(--serif); padding: 40px 0; }
+
+/* La portada del foro: la lista a la izquierda y, al lado, lo que hay que
+   saber antes de escribir. Antes eso solo se descubría al intentarlo. */
+.rejilla { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 56px; align-items: start; }
+@media (max-width: 920px) { .rejilla { grid-template-columns: minmax(0, 1fr); gap: 40px; } }
+
+.cabecera { display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 26px; }
+.cabecera h1 { font-size: clamp(40px, 5vw, 56px); font-weight: 500; letter-spacing: -0.025em; margin: 0; line-height: 1; }
+.cabecera p { margin: 10px 0 0; color: var(--suave); font-size: 17px; max-width: 30em; }
+.cabecera .boton { margin-left: auto; }
+
+.pestanas {
+  position: relative; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
+  border-bottom: 1px solid var(--borde); margin-bottom: 4px;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --papel: #16171a; --caja: #1d1f23; --tinta: #e8e6e1; --suave: #a2a099;
-    --borde: #30323a; --azul: #79b0e4; --tierra: #e0865c; --verde: #6fca92;
-    --codigo-fondo: #1a1c20;
-  }
+.pestanas::-webkit-scrollbar { display: none; }
+.pestanas a {
+  font-size: 15px; color: var(--suave); text-decoration: none; padding: 12px 12px 12px; white-space: nowrap;
 }
-* { box-sizing: border-box; }
-[hidden] { display: none !important; }
-* { scrollbar-width: thin; scrollbar-color: var(--borde) transparent; }
-::-webkit-scrollbar { width: 11px; height: 11px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--borde); border-radius: 6px; border: 3px solid var(--papel); }
-::-webkit-scrollbar-thumb:hover { background: var(--suave); }
-
-body { margin: 0; background: var(--papel); color: var(--tinta); font: 16px/1.6 var(--sans); }
-h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.25; text-wrap: balance; }
-a { color: var(--azul); }
-button { font: inherit; cursor: pointer; }
-code, pre, textarea, input { font-family: var(--mono); }
-
-nav { border-bottom: 1px solid var(--borde); background: var(--papel); position: sticky; top: 0; z-index: 20; }
-nav .fila { display: flex; align-items: center; gap: 16px; height: 56px; padding: 0 20px; max-width: 1000px; margin: 0 auto; }
-.marca { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--tinta); text-decoration: none; }
-.marca span { color: var(--tierra); }
-.migas { color: var(--suave); font-size: 15px; }
-nav .derecha { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 14.5px; }
-nav .derecha a { color: var(--suave); text-decoration: none; }
-nav .derecha a:hover { color: var(--tinta); }
-@media (max-width: 700px) { nav .derecha a.opcional { display: none; } }
-
-.btn { padding: 7px 14px; border-radius: 6px; border: 1px solid var(--azul); background: transparent; color: var(--azul); }
-.btn.lleno { background: var(--azul); color: var(--papel); }
-.btn.gris { border-color: var(--borde); color: var(--suave); }
-.btn.pequeno { padding: 4px 10px; font-size: 13px; }
-.btn:disabled { opacity: .5; cursor: default; }
-
-main { max-width: 1000px; margin: 0 auto; padding: 26px 20px 80px; }
-
-.cabecera-foro { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
-.cabecera-foro h1 { font-size: 27px; margin: 0; }
-.cabecera-foro .lejos { margin-left: auto; }
-
-.tiras { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-.tira {
-  padding: 5px 12px; border: 1px solid var(--borde); border-radius: 20px;
-  font-size: 14px; color: var(--suave); text-decoration: none; background: var(--caja);
+.pestanas a:first-child { padding-left: 0; }
+.pestanas a:hover { color: var(--tinta); }
+.pestanas a[aria-current="page"] { color: var(--tinta); }
+/* Una sola raya que se desliza a la categoría elegida, como en la portada. */
+.pestanas .indicador {
+  position: absolute; left: 0; bottom: 0; height: 2px; width: 0; background: var(--tierra);
+  border-radius: 2px 2px 0 0; transition: transform .3s cubic-bezier(.3, .7, .2, 1), width .3s cubic-bezier(.3, .7, .2, 1);
 }
-.tira:hover { color: var(--tinta); }
-.tira.puesta { background: var(--tinta); color: var(--papel); border-color: var(--tinta); }
 
-.lista { border: 1px solid var(--borde); border-radius: 10px; overflow: hidden; background: var(--caja); }
-.fila-tema { display: flex; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--borde); text-decoration: none; color: var(--tinta); }
-.fila-tema:last-child { border-bottom: 0; }
-.fila-tema:hover { background: var(--codigo-fondo); }
-.fila-tema .medio { flex: 1; min-width: 0; }
-.fila-tema .titulo { font-weight: 600; margin: 0 0 3px; }
-.fila-tema .pie { font-size: 13.5px; color: var(--suave); }
-.fila-tema .cuantos { text-align: center; flex: none; width: 54px; color: var(--suave); font-size: 13px; }
-.fila-tema .cuantos b { display: block; font-size: 17px; color: var(--tinta); font-family: var(--serif); }
-.etiqueta { font-size: 12px; color: var(--tierra); }
+/* La lista va sin caja, como el índice de una revista: una raya entre tema y
+   tema y el número de respuestas grande a la derecha. */
+.temas { list-style: none; margin: 0; padding: 0; }
+.temas li { border-bottom: 1px solid var(--borde); }
+.tema {
+  display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 18px; align-items: center;
+  padding: 18px 4px; color: var(--tinta); text-decoration: none;
+}
+.tema:hover .titulo { color: var(--azul); }
+.tema .categoria { display: block; margin-bottom: 2px; }
+.tema .titulo { font: 500 21px/1.25 var(--serif); margin: 0; text-wrap: pretty; transition: color .15s; }
+.tema .pie { margin: 5px 0 0; font-size: 14px; color: var(--suave); }
+.tema .cuantos { text-align: right; color: var(--suave); font-size: 12.5px; line-height: 1.2; }
+.tema .cuantos b { display: block; font: 400 30px/1 var(--serif); color: var(--tinta); }
 .chapa {
-  font-size: 11px; letter-spacing: .04em; text-transform: uppercase;
+  font: 11px/1 var(--sans); letter-spacing: .05em; text-transform: uppercase;
   border: 1px solid var(--tierra); color: var(--tierra);
-  border-radius: 4px; padding: 1px 5px; vertical-align: 1px;
+  border-radius: 4px; padding: 3px 5px 2px; vertical-align: 2px; white-space: nowrap;
 }
 /* La de moderar no compite con la de fundador: una dice quien llego pronto
    y la otra es un cargo. */
 .chapa.apagada { border-color: var(--borde); color: var(--suave); }
 
+.paso { display: flex; margin-top: 22px; }
+.paso .alante { margin-left: auto; }
+
+/* El foro de verdad hoy está vacío, así que este es el estado que más gente
+   va a ver. Un "aquí no hay nada" a secas parece un sitio abandonado; las
+   cuatro categorías dicen qué se puede escribir y cada una lleva a hacerlo. */
+.vacio { padding: 34px 0 10px; }
+.vacio h2 { font: 400 32px/1.15 var(--serif); margin: 0 0 10px; letter-spacing: -0.015em; }
+.vacio > p { color: var(--suave); margin: 0 0 26px; max-width: 32em; font-size: 16.5px; text-wrap: pretty; }
+.ideas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 620px) { .ideas { grid-template-columns: 1fr; } }
+.idea {
+  display: block; border: 1px solid var(--borde); border-radius: 12px; padding: 16px 18px;
+  background: var(--caja); color: var(--tinta); text-decoration: none; transition: border-color .2s, transform .2s;
+}
+.idea:hover { border-color: color-mix(in srgb, var(--tierra) 50%, var(--borde)); transform: translateY(-1px); }
+.idea b { display: block; font: 500 19px var(--serif); }
+.idea span { font-size: 14.5px; color: var(--suave); }
+
+.lado h2 { font: italic 400 19px var(--serif); margin: 0 0 8px; color: var(--tierra); }
+.lado p { font-size: 15px; color: var(--suave); margin: 0 0 12px; text-wrap: pretty; }
+.lado section { padding: 0 0 22px; margin-bottom: 22px; border-bottom: 1px solid var(--borde); }
+.lado section:last-child { border-bottom: 0; }
+.lado pre {
+  margin: 0; padding: 10px 12px; border: 1px solid var(--borde); border-radius: 8px;
+  background: var(--codigo-fondo); font: 13px/1.6 var(--mono); overflow-x: auto;
+}
+.lado .regla-curso { display: flex; gap: 3px; margin: 4px 0 8px; }
+.lado .regla-curso i { flex: 1; height: 8px; border-radius: 1.5px; background: var(--borde); }
+.lado .regla-curso i.hecha { background: var(--tierra); }
+
+/* Un tema abierto. */
+.volver { font-size: 14.5px; text-decoration: none; }
+.volver:hover { text-decoration: underline; }
+.hilo { max-width: 760px; }
+.hilo-cabeza { margin: 18px 0 30px; }
+.hilo-cabeza h1 { font-size: clamp(30px, 4vw, 42px); font-weight: 500; letter-spacing: -0.02em; margin: 6px 0 10px; line-height: 1.1; }
+.hilo-cabeza .pie { color: var(--suave); font-size: 14.5px; margin: 0; }
 .moderar {
   display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-  font-size: 13px; color: var(--suave); margin: 0 0 16px;
+  font-size: 13.5px; color: var(--suave); margin: 0 0 24px; padding: 10px 14px;
+  border: 1px dashed var(--borde); border-radius: 10px;
 }
-.paso { display: flex; margin-top: 16px; }
-.paso a { text-decoration: none; }
-.vacio { padding: 40px 20px; text-align: center; color: var(--suave); }
-.vacio p { max-width: 30em; margin: 6px auto; }
 
-.mensaje { border: 1px solid var(--borde); border-radius: 10px; background: var(--caja); padding: 16px 18px; margin-bottom: 12px; }
-.mensaje .quien { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; margin-bottom: 8px; font-size: 14px; }
-.mensaje .quien a { font-weight: 600; text-decoration: none; }
-.mensaje .quien .cuando { color: var(--suave); font-size: 13px; }
-.mensaje .cuerpo { white-space: pre-wrap; word-break: break-word; text-wrap: pretty; }
-.mensaje .cuerpo pre {
-  background: var(--codigo-fondo); border: 1px solid var(--borde); border-radius: 8px;
-  padding: 12px 14px; overflow-x: auto; font-size: 14px; white-space: pre; margin: 10px 0;
+/* Las respuestas cuelgan de una raya, como en una conversación anotada al
+   margen. La pregunta va arriba, sin raya y con la letra más grande. */
+.mensaje { position: relative; padding: 0 0 26px 26px; }
+.mensaje::before { content: ""; position: absolute; left: 4px; top: 8px; bottom: 0; width: 1px; background: var(--borde); }
+.mensaje::after {
+  content: ""; position: absolute; left: 0; top: 6px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--papel); border: 1px solid color-mix(in srgb, var(--suave) 60%, var(--borde));
 }
-.mensaje .abajo { display: flex; gap: 12px; align-items: center; margin-top: 12px; font-size: 13.5px; }
-.mensaje.borrado { color: var(--suave); font-style: italic; }
-.mensaje.primero { border-left: 3px solid var(--tierra); }
-.util { background: none; border: 1px solid var(--borde); border-radius: 20px; padding: 3px 11px; font-size: 13px; color: var(--suave); }
+.mensaje:last-of-type::before { display: none; }
+.mensaje.primero { padding-left: 0; padding-bottom: 30px; margin-bottom: 30px; border-bottom: 1px solid var(--borde); }
+.mensaje.primero::before, .mensaje.primero::after { display: none; }
+.mensaje .quien { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; margin-bottom: 6px; font-size: 14.5px; }
+.mensaje .quien a { font-weight: 600; color: var(--tinta); text-decoration: none; }
+.mensaje .quien a:hover { text-decoration: underline; }
+.mensaje .quien .cuando { color: var(--suave); font-size: 13.5px; }
+.mensaje .cuerpo { white-space: pre-wrap; word-break: break-word; text-wrap: pretty; font-size: 16.5px; line-height: 1.65; }
+.mensaje.primero .cuerpo { font-size: 17.5px; }
+.mensaje.borrado { color: var(--suave); font: italic 16px var(--serif); }
+.bloque { position: relative; margin: 12px 0; white-space: normal; }
+.bloque pre {
+  margin: 0; background: var(--codigo-fondo); border: 1px solid var(--borde); border-radius: 10px;
+  padding: 12px 16px; overflow-x: auto; font: 14px/1.6 var(--mono); white-space: pre;
+}
+/* El código de un mensaje se puede abrir en el playground tal cual. Quien
+   responde a una duda casi siempre acaba copiándolo para probarlo. */
+.bloque .probar {
+  position: absolute; top: 8px; right: 8px; font-size: 12.5px; text-decoration: none;
+  padding: 3px 9px; border-radius: 6px; background: var(--caja); border: 1px solid var(--borde);
+  opacity: 0; transition: opacity .15s;
+}
+.bloque:hover .probar, .bloque .probar:focus-visible { opacity: 1; }
+@media (hover: none) { .bloque .probar { opacity: 1; } }
+.mensaje .abajo { display: flex; gap: 14px; align-items: center; margin-top: 10px; font-size: 13.5px; }
+.util {
+  background: none; border: 1px solid var(--borde); border-radius: 20px; padding: 3px 12px;
+  font-size: 13px; color: var(--suave); transition: color .15s, border-color .15s;
+}
+.util:hover { color: var(--tinta); }
 .util.puesto { color: var(--verde); border-color: var(--verde); }
 .util.quieto { cursor: default; border-style: dashed; }
 .borrar { background: none; border: 0; color: var(--suave); font-size: 13px; padding: 0; text-decoration: underline; }
+.mensaje .avisar { margin-left: auto; color: var(--suave); font-size: 13px; }
+.mensaje .avisar:hover { color: var(--tierra); }
 
-.escribir { border: 1px solid var(--borde); border-radius: 10px; background: var(--caja); padding: 16px 18px; margin-top: 20px; }
-.escribir h3 { margin: 0 0 12px; font-size: 17px; font-family: var(--sans); }
-.escribir textarea, .escribir input, .escribir select {
-  width: 100%; padding: 11px 12px; border: 1px solid var(--borde); border-radius: 7px;
-  background: var(--papel); color: var(--tinta); font-size: 15px; margin-bottom: 10px;
+.escribir { margin-top: 10px; border: 1px solid var(--borde); border-radius: 14px; background: var(--caja); box-shadow: var(--sombra); overflow: hidden; }
+.escribir .cabeza { padding: 12px 18px; border-bottom: 1px solid var(--borde); font: italic 17px var(--serif); color: var(--suave); }
+.escribir textarea, .escribir input {
+  display: block; width: 100%; border: 0; background: transparent; color: var(--tinta);
+  padding: 14px 18px; font: 16px/1.6 var(--sans); outline: none;
 }
-.escribir textarea { min-height: 130px; resize: vertical; line-height: 1.55; }
-.escribir input, .escribir select { font-family: var(--sans); }
-.escribir textarea:focus, .escribir input:focus { outline: 2px solid var(--azul); outline-offset: -1px; }
-.escribir .abajo { display: flex; gap: 10px; align-items: center; }
-.escribir .cuenta-letras { margin-left: auto; font-size: 13px; color: var(--suave); }
-.aviso {
-  border: 1px solid var(--borde); border-left: 3px solid var(--tierra); border-radius: 0 8px 8px 0;
-  background: var(--caja); padding: 14px 16px; margin-top: 20px; font-size: 14.5px;
-}
-.aviso b { display: block; margin-bottom: 4px; }
+.escribir input { font: 500 21px var(--serif); border-bottom: 1px solid var(--borde); }
+.escribir textarea { min-height: 170px; resize: vertical; }
+.escribir textarea::placeholder, .escribir input::placeholder { color: var(--suave); opacity: .75; }
+.escribir .abajo { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 10px 14px; border-top: 1px solid var(--borde); }
+.escribir .ayuda { font-size: 13px; color: var(--suave); }
+.escribir .cuenta-letras { margin-left: auto; font: 12.5px var(--mono); color: var(--suave); }
+.escribir .cuenta-letras.cerca { color: var(--tierra); }
 .error-caja {
-  color: var(--tierra); font-size: 14px; margin: 10px 0 0; padding: 9px 12px;
-  background: color-mix(in srgb, var(--tierra) 9%, transparent);
-  border-radius: 7px; border: 1px solid color-mix(in srgb, var(--tierra) 28%, transparent);
+  color: var(--tierra); font-size: 14px; margin: 0; padding: 10px 18px;
+  background: color-mix(in srgb, var(--tierra) 8%, transparent); border-top: 1px solid var(--borde);
 }
+/* Elegir categoría con las cuatro a la vista, cada una con lo que es. En un
+   desplegable había que abrirlo para enterarse de que había cuatro. */
+.elegir { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--borde); }
+@media (max-width: 760px) { .elegir { grid-template-columns: 1fr 1fr; } }
+.elegir label { padding: 12px 16px; cursor: pointer; border-right: 1px solid var(--borde); font-size: 13px; color: var(--suave); line-height: 1.4; }
+.elegir label:last-child { border-right: 0; }
+@media (max-width: 760px) { .elegir label:nth-child(2n) { border-right: 0; } .elegir label:nth-child(-n+2) { border-bottom: 1px solid var(--borde); } }
+.elegir input { position: absolute; opacity: 0; pointer-events: none; }
+.elegir b { display: block; font: 500 16px var(--serif); color: var(--tinta); margin-bottom: 2px; }
+.elegir label:has(input:checked) { background: var(--tierra-velo); box-shadow: inset 0 -2px 0 var(--tierra); }
+.elegir label:has(input:focus-visible) { outline: 2px solid var(--azul); outline-offset: -2px; }
 
-/* Perfil */
-.perfil-cabeza { display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; margin-bottom: 6px; }
-.perfil-cabeza h1 { font-size: 30px; margin: 0; }
-.perfil-desde { color: var(--suave); font-size: 14.5px; margin: 0 0 22px; }
-.numeros { display: flex; gap: 30px; margin-bottom: 26px; }
-.numeros b { display: block; font-family: var(--serif); font-size: 25px; line-height: 1; }
-.numeros span { font-size: 13px; color: var(--suave); }
-.marcas { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 10px; margin-bottom: 30px; }
-.marca-caja { border: 1px solid var(--borde); border-radius: 9px; background: var(--caja); padding: 12px 14px; }
-.marca-caja b { display: block; font-size: 14.5px; }
-.marca-caja span { font-size: 13px; color: var(--suave); }
-.marca-caja i { display: block; font-size: 12px; color: var(--suave); font-style: normal; margin-top: 5px; }
-h2.seccion { font-size: 19px; margin: 26px 0 10px; }
-.mini { border: 1px solid var(--borde); border-radius: 9px; background: var(--caja); padding: 11px 14px; margin-bottom: 8px; }
-.mini a { text-decoration: none; font-weight: 600; }
-.mini p { margin: 4px 0 0; font-size: 14px; color: var(--suave); }
-
-footer.legal {
-  border-top: 1px solid var(--borde); margin-top: 40px;
-  padding: 22px 20px 40px; font-size: 13.5px; color: var(--suave);
+.aviso {
+  margin-top: 10px; padding: 18px 20px; border-left: 3px solid var(--tierra);
+  background: var(--caja); border-radius: 0 12px 12px 0; box-shadow: 0 1px 0 var(--borde); max-width: 640px;
 }
-footer.legal div { max-width: 1000px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap; }
-footer.legal a { color: var(--suave); text-decoration: none; }
-footer.legal a:hover { color: var(--tinta); text-decoration: underline; }
+.aviso b { display: block; font: 500 20px var(--serif); margin-bottom: 4px; }
+.aviso p { margin: 8px 0 0; color: var(--suave); font-size: 15.5px; }
+
+/* El perfil. */
+.perfil-cabeza { display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; margin: 18px 0 4px; }
+.perfil-cabeza h1 { font-size: clamp(36px, 5vw, 52px); font-weight: 500; letter-spacing: -0.02em; margin: 0; }
+.perfil-desde { color: var(--suave); font-size: 15px; margin: 0 0 30px; }
+.numeros { display: flex; gap: 44px; margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--borde); flex-wrap: wrap; }
+.numeros b { display: block; font: 400 44px/1 var(--serif); color: var(--tierra); letter-spacing: -0.02em; }
+.numeros span { font-size: 14px; color: var(--suave); }
+h2.seccion { font: italic 400 22px var(--serif); margin: 30px 0 12px; }
+.marcas { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.marca-caja { border: 1px solid var(--borde); border-radius: 12px; background: var(--caja); padding: 14px 16px; }
+.marca-caja b { display: block; font: 500 18px var(--serif); }
+.marca-caja span { font-size: 14px; color: var(--suave); }
+.marca-caja i { display: block; font: 12.5px var(--mono); color: var(--suave); font-style: normal; margin-top: 8px; }
+.mini { list-style: none; margin: 0; padding: 0; }
+.mini li { border-bottom: 1px solid var(--borde); padding: 12px 0; }
+.mini a { font: 500 18px var(--serif); text-decoration: none; color: var(--tinta); }
+.mini a:hover { color: var(--azul); }
+.mini p { margin: 3px 0 0; font-size: 14.5px; color: var(--suave); }
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="fila">
-    <a class="marca" href="https://fal-lang.org">Fal<span>.</span></a>
-    <span class="migas">Foro</span>
-    <div class="derecha">
-      <a href="https://aprende.fal-lang.org/">El curso</a>
-      <a class="opcional" href="https://fal-lang.org/manual.html">Manual</a>
+<nav class="sitio">
+  <div class="centro fila">
+    <a class="marca" href="https://fal-lang.org/">Fal<span>.</span></a>
+    <div class="enlaces">
       <a class="opcional" href="https://fal-lang.org/probar.html">Probar</a>
+      <a href="https://aprende.fal-lang.org/">Aprender</a>
+      <a href="./" aria-current="page">Foro</a>
+      <a class="opcional" href="https://fal-lang.org/manual.html">Manual</a>
       <span id="zonaCuenta"></span>
     </div>
   </div>
 </nav>
 
-<main id="donde">
-  <p class="vacio">Cargando…</p>
+<main>
+  <div class="centro" id="donde">
+    <p class="cargando">Cargando…</p>
+  </div>
 </main>
+
+<footer class="pie">
+  <div class="centro">
+    <a href="https://fal-lang.org/aviso-legal.html">Aviso legal</a>
+    <a href="https://fal-lang.org/privacidad.html">Privacidad</a>
+    <a href="https://fal-lang.org/cookies.html">Cookies</a>
+    <a href="https://github.com/NissanBoss/fal-academia">Código del foro</a>
+    <span class="lejos">Sin anuncios, sin seguimiento y sin captcha.</span>
+  </div>
+</footer>
 
 <script type="module">
 import { cuenta, API } from "./cuenta.js";
+import { pintar, aTextoDeEnlace } from "./pintar.js";
 
 const ACADEMIA = "https://aprende.fal-lang.org/";
+const PLAYGROUND = "https://fal-lang.org/probar.html";
+const LIMITE = 8000;
 const $ = (id) => document.getElementById(id);
 const donde = $("donde");
 let yo = null;
@@ -205,14 +269,9 @@ let fundadores = 0;
 
 // --- Cosas de pintar -----------------------------------------------------
 
-// Todo lo que escribe una persona pasa por aquí antes de tocar la página.
-// Es la única defensa que hace falta contra que alguien meta etiquetas en un
-// mensaje, y por eso no se usa innerHTML con nada que venga del servidor.
-function texto(nodo, contenido) {
-  nodo.textContent = contenido;
-  return nodo;
-}
-
+// Todo lo que escribe una persona entra en la página como texto. La única
+// excepción es el código pintado, y pintar() escapa cada carácter antes de
+// envolverlo en sus colores.
 function crear(etiqueta, clase, contenido) {
   const e = document.createElement(etiqueta);
   if (clase) e.className = clase;
@@ -221,22 +280,26 @@ function crear(etiqueta, clase, contenido) {
 }
 
 // El cuerpo de un mensaje se pinta como texto, salvo los trozos entre tres
-// comillas invertidas, que salen en un bloque de código. Es lo único de
-// formato que se admite: quien viene a preguntar por qué no le compila algo
-// pega código, y verlo en una fuente de ancho fijo es la diferencia entre
-// entenderlo y no.
+// comillas invertidas, que salen en un bloque de código con los colores de
+// Fal y un enlace para abrirlo en el playground.
 function pintarCuerpo(caja, cuerpo) {
   const trozos = String(cuerpo).split(/```/);
   trozos.forEach((trozo, i) => {
     if (i % 2 === 1) {
-      caja.appendChild(crear("pre", null, trozo.replace(/^\n/, "").replace(/\s+$/, "")));
+      const codigo = trozo.replace(/^\n/, "").replace(/\s+$/, "");
+      const bloque = crear("div", "bloque");
+      const pre = document.createElement("pre");
+      pre.innerHTML = pintar(codigo);
+      bloque.appendChild(pre);
+      const probar = crear("a", "probar", "Probarlo");
+      probar.href = PLAYGROUND + "#p=" + aTextoDeEnlace(codigo);
+      probar.title = "Abrir este código en el playground";
+      bloque.appendChild(probar);
+      caja.appendChild(bloque);
       return;
     }
-    // Los saltos de línea que quedan pegados a un bloque de código sobran.
-    // El bloque ya trae su propia separación, y dejarlos abre a cada lado un
-    // hueco del tamaño de un párrafo en blanco, que es justo lo que se ve al
-    // pegar un programa como lo pega todo el mundo: con una línea vacía
-    // antes y otra después.
+    // Los saltos de línea pegados a un bloque de código sobran: el bloque ya
+    // trae su separación, y dejarlos abría un hueco de un párrafo a cada lado.
     let texto = trozo;
     if (i > 0) texto = texto.replace(/^\n+/, "");
     if (i < trozos.length - 1) texto = texto.replace(/\n+$/, "");
@@ -273,9 +336,8 @@ async function pedir(camino, opciones) {
   return cuerpo;
 }
 
-// La chapa de fundador va al lado del nombre en todas partes, y no solo en
-// el perfil: enterarse de que alguien estuvo desde el principio no debería
-// costar una visita a otra página.
+// La chapa de fundador va al lado del nombre en todas partes: enterarse de
+// que alguien estuvo desde el principio no debería costar otra página.
 function chapaFundador(autorId) {
   if (!fundadores || !(autorId > 0 && autorId <= fundadores)) return null;
   const chapa = crear("span", "chapa", "beta");
@@ -283,33 +345,137 @@ function chapaFundador(autorId) {
   return chapa;
 }
 
-// --- Las cuatro vistas ---------------------------------------------------
+function enlaceVolver() {
+  const volver = crear("a", "volver", "← Volver al foro");
+  volver.href = "#/";
+  return volver;
+}
+
+function moverIndicador(lista) {
+  const elegida = lista.querySelector('[aria-current="page"]');
+  const raya = lista.querySelector(".indicador");
+  if (!elegida || !raya) return;
+  const izquierda = parseFloat(getComputedStyle(elegida).paddingLeft) || 0;
+  const derecha = parseFloat(getComputedStyle(elegida).paddingRight) || 0;
+  raya.style.width = (elegida.offsetWidth - izquierda - derecha) + "px";
+  raya.style.transform = `translateX(${elegida.offsetLeft + izquierda}px)`;
+}
+
+// --- La portada del foro -------------------------------------------------
+
+function columnaDeAlLado() {
+  const lado = crear("aside", "lado");
+
+  const escribir = crear("section");
+  escribir.appendChild(crear("h2", null, "Para escribir"));
+  escribir.appendChild(crear("p", null,
+    "Leer no pide nada. Para escribir hace falta una cuenta del curso y haber terminado " +
+    "el primer módulo, cinco lecciones. Es lo que tiene el foro limpio de programas que escriben solos."));
+  const regla = crear("div", "regla-curso");
+  for (let i = 0; i < 5; i++) regla.appendChild(document.createElement("i"));
+  escribir.appendChild(regla);
+  const estado = crear("p", null);
+  estado.id = "estadoPermiso";
+  escribir.appendChild(estado);
+  lado.appendChild(escribir);
+
+  const codigo = crear("section");
+  codigo.appendChild(crear("h2", null, "Para pegar código"));
+  codigo.appendChild(crear("p", null,
+    "Ponlo entre tres comillas invertidas. Sale con colores y con un botón para probarlo."));
+  const ejemplo = document.createElement("pre");
+  ejemplo.textContent = "```\nescribe \"Hola\"\n```";
+  codigo.appendChild(ejemplo);
+  lado.appendChild(codigo);
+
+  // El permiso se pide aparte para no retrasar la lista: el lado se rellena
+  // cuando llega.
+  pedir("/api/foro/puedo").catch(() => ({ puede: false })).then((p) => {
+    const hechas = !yo ? 0 : p.puede ? 5 : 5 - (p.faltan || 5);
+    regla.querySelectorAll("i").forEach((i, n) => i.classList.toggle("hecha", n < hechas));
+    estado.textContent = "";
+    if (!yo) {
+      const a = crear("a", null, "Empezar el curso");
+      a.href = ACADEMIA;
+      estado.append("Aún no tienes cuenta. ", a, ".");
+    } else if (p.puede) {
+      estado.textContent = "Ya puedes escribir, " + yo.usuario + ".";
+    } else {
+      const a = crear("a", null, "Seguir el curso");
+      a.href = ACADEMIA;
+      estado.append("Te " + (p.faltan === 1 ? "falta una lección" : "faltan " + p.faltan + " lecciones") + ". ", a, ".");
+    }
+  });
+  return lado;
+}
+
+function pintarVacio(caja, categoria) {
+  const nada = crear("div", "vacio");
+  if (categoria) {
+    const c = categorias.find((x) => x.clave === categoria);
+    nada.appendChild(crear("h2", null, "En «" + (c ? c.nombre : categoria) + "» todavía no hay nada."));
+    nada.appendChild(crear("p", null, c ? c.resumen : ""));
+    const ir = crear("a", "boton lleno", "Escribir el primero");
+    ir.href = "#/nuevo/" + categoria;
+    nada.appendChild(ir);
+    caja.appendChild(nada);
+    return;
+  }
+  nada.appendChild(crear("h2", null, "Aquí todavía no ha escrito nadie."));
+  nada.appendChild(crear("p", null,
+    "Ser el primero en un foro tiene su gracia. Esto es lo que cabe en cada sitio; " +
+    "elige uno y te lleva a escribir con la categoría ya puesta."));
+  const ideas = crear("div", "ideas");
+  for (const c of categorias) {
+    const a = crear("a", "idea");
+    a.href = "#/nuevo/" + c.clave;
+    a.appendChild(crear("b", null, c.nombre));
+    a.appendChild(crear("span", null, c.resumen));
+    ideas.appendChild(a);
+  }
+  nada.appendChild(ideas);
+  caja.appendChild(nada);
+}
 
 async function pintarLista(categoria, pagina) {
   donde.innerHTML = "";
-  const cabecera = crear("div", "cabecera-foro");
-  cabecera.appendChild(crear("h1", null, "Foro"));
-  const lejos = crear("div", "lejos");
-  const nuevo = crear("button", "btn lleno", "Escribir");
-  nuevo.onclick = () => { location.hash = "#/nuevo"; };
-  lejos.appendChild(nuevo);
-  cabecera.appendChild(lejos);
-  donde.appendChild(cabecera);
+  const rejilla = crear("div", "rejilla");
+  const izquierda = crear("div");
+  rejilla.appendChild(izquierda);
+  rejilla.appendChild(columnaDeAlLado());
+  donde.appendChild(rejilla);
 
-  const tiras = crear("div", "tiras");
-  const todas = crear("a", "tira" + (categoria ? "" : " puesta"), "Todo");
+  const cabecera = crear("div", "cabecera");
+  const textos = crear("div");
+  textos.appendChild(crear("h1", null, "Foro"));
+  textos.appendChild(crear("p", null, "Dudas del curso, cosas hechas con Fal e ideas para el lenguaje."));
+  cabecera.appendChild(textos);
+  const nuevo = crear("a", "boton lleno", "Escribir");
+  nuevo.href = "#/nuevo" + (categoria ? "/" + categoria : "");
+  cabecera.appendChild(nuevo);
+  izquierda.appendChild(cabecera);
+
+  const pestanas = crear("nav", "pestanas");
+  pestanas.setAttribute("aria-label", "Categorías");
+  const todas = crear("a", null, "Todo");
   todas.href = "#/";
-  tiras.appendChild(todas);
+  if (!categoria) todas.setAttribute("aria-current", "page");
+  pestanas.appendChild(todas);
   for (const c of categorias) {
-    const t = crear("a", "tira" + (categoria === c.clave ? " puesta" : ""), c.nombre);
+    const t = crear("a", null, c.nombre);
     t.href = "#/c/" + c.clave;
     t.title = c.resumen;
-    tiras.appendChild(t);
+    if (categoria === c.clave) t.setAttribute("aria-current", "page");
+    pestanas.appendChild(t);
   }
-  donde.appendChild(tiras);
+  pestanas.appendChild(crear("span", "indicador"));
+  izquierda.appendChild(pestanas);
+  requestAnimationFrame(() => moverIndicador(pestanas));
+  document.fonts && document.fonts.ready.then(() => moverIndicador(pestanas));
 
-  const caja = crear("div", "lista");
-  donde.appendChild(caja);
+  const caja = crear("div");
+  caja.appendChild(crear("p", "cargando", "Cargando…"));
+  izquierda.appendChild(caja);
 
   const busca = new URLSearchParams();
   if (categoria) busca.set("categoria", categoria);
@@ -319,58 +485,59 @@ async function pintarLista(categoria, pagina) {
   try {
     datos = await pedir("/api/foro/temas?" + busca.toString());
   } catch (e) {
-    caja.appendChild(crear("p", "vacio", e.message));
+    caja.innerHTML = "";
+    caja.appendChild(crear("p", "cargando", e.message));
     return;
   }
+  caja.innerHTML = "";
 
   if (!datos.temas.length) {
-    const nada = crear("div", "vacio");
-    nada.appendChild(crear("p", null, "Aquí todavía no hay nada."));
-    nada.appendChild(crear("p", null,
-      "Si te has atascado con algo del curso, pregúntalo. Ser el primero en escribir en un foro tiene su gracia."));
-    caja.appendChild(nada);
+    pintarVacio(caja, categoria);
     return;
   }
 
+  const lista = crear("ul", "temas");
   for (const t of datos.temas) {
-    const fila = crear("a", "fila-tema");
+    const li = document.createElement("li");
+    const fila = crear("a", "tema");
     fila.href = "#/t/" + t.id;
-
-    const cuantos = crear("div", "cuantos");
-    cuantos.appendChild(crear("b", null, String(t.mensajes)));
-    cuantos.appendChild(crear("span", null, t.mensajes === 1 ? "mensaje" : "mensajes"));
-    fila.appendChild(cuantos);
-
-    const medio = crear("div", "medio");
-    medio.appendChild(crear("p", "titulo", t.titulo));
-    const pie = crear("p", "pie");
-    pie.appendChild(crear("span", "etiqueta", t.categoriaNombre));
-    pie.appendChild(document.createTextNode(" · lo abrió " + t.autor + " · última respuesta " + cuando(t.movido)));
-    medio.appendChild(pie);
+    const medio = crear("div");
+    if (!categoria) medio.appendChild(crear("span", "categoria versalitas", t.categoriaNombre));
+    const titulo = crear("p", "titulo", t.titulo + " ");
+    if (t.cerrado) titulo.appendChild(crear("span", "chapa apagada", "cerrado"));
+    medio.appendChild(titulo);
+    const respuestas = t.mensajes - 1;
+    medio.appendChild(crear("p", "pie",
+      t.autor + " · " + (respuestas ? "última respuesta " : "abierto ") + cuando(t.movido)));
     fila.appendChild(medio);
-    caja.appendChild(fila);
+    const cuantos = crear("div", "cuantos");
+    cuantos.appendChild(crear("b", null, String(respuestas)));
+    cuantos.appendChild(crear("span", null, respuestas === 1 ? "respuesta" : "respuestas"));
+    fila.appendChild(cuantos);
+    li.appendChild(fila);
+    lista.appendChild(li);
   }
+  caja.appendChild(lista);
 
-  // Anterior y siguiente, y solo cuando hay a dónde ir. Un foro que empieza
-  // no tiene veinticinco temas, y hasta que los tenga estos botones no
-  // aparecen.
+  // Anterior y siguiente, y solo cuando hay a dónde ir.
   if (pagina > 0 || datos.hayMas) {
     const paso = crear("div", "paso");
     const base = "#/" + (categoria ? "c/" + categoria : "");
     if (pagina > 0) {
-      const atras = crear("a", "btn gris", "← Más recientes");
+      const atras = crear("a", "boton gris", "← Más recientes");
       atras.href = base + (pagina - 1 > 0 ? (categoria ? "/" : "p/") + (pagina - 1) : "");
       paso.appendChild(atras);
     }
     if (datos.hayMas) {
-      const alante = crear("a", "btn gris", "Más antiguos →");
+      const alante = crear("a", "boton gris alante", "Más antiguos →");
       alante.href = base + (categoria ? "/" : "p/") + (pagina + 1);
-      alante.style.marginLeft = "auto";
       paso.appendChild(alante);
     }
-    donde.appendChild(paso);
+    caja.appendChild(paso);
   }
 }
+
+// --- Un tema -------------------------------------------------------------
 
 async function pintarTema(id) {
   donde.innerHTML = "";
@@ -384,51 +551,46 @@ async function pintarTema(id) {
       pedir("/api/foro/puedo").catch(() => ({ puede: false, motivo: "" })),
     ]);
   } catch (e) {
-    donde.appendChild(crear("p", "vacio", e.message));
+    donde.appendChild(enlaceVolver());
+    donde.appendChild(crear("p", "cargando", e.message));
     return;
   }
 
-  const volver = crear("a", null, "← Volver al foro");
-  volver.href = "#/";
-  volver.style.fontSize = "14px";
-  donde.appendChild(volver);
+  const hilo = crear("article", "hilo");
+  hilo.appendChild(enlaceVolver());
+  const cabeza = crear("header", "hilo-cabeza");
+  cabeza.appendChild(crear("span", "versalitas", datos.tema.categoriaNombre));
+  cabeza.appendChild(crear("h1", null, datos.tema.titulo));
+  const respuestas = datos.mensajes.length - 1;
+  cabeza.appendChild(crear("p", "pie",
+    "Abierto " + cuando(datos.tema.creado) + " · " +
+    (respuestas === 1 ? "una respuesta" : respuestas + " respuestas") +
+    (datos.tema.cerrado ? " · cerrado" : "")));
+  hilo.appendChild(cabeza);
+  document.title = datos.tema.titulo + " · Foro de Fal";
 
-  const h1 = crear("h1", null, datos.tema.titulo);
-  h1.style.margin = "12px 0 4px";
-  h1.style.fontSize = "26px";
-  donde.appendChild(h1);
+  if (permiso.modera) hilo.appendChild(botonesDeModerar(datos.tema));
 
-  const sub = crear("p", null);
-  sub.style.color = "var(--suave)";
-  sub.style.fontSize = "14px";
-  sub.style.margin = "0 0 22px";
-  sub.appendChild(crear("span", "etiqueta", datos.tema.categoriaNombre));
-  sub.appendChild(document.createTextNode(" · " + cuando(datos.tema.creado)));
-  donde.appendChild(sub);
-
-  if (permiso.modera) donde.appendChild(botonesDeModerar(datos.tema));
-
-  datos.mensajes.forEach((m, i) =>
-    donde.appendChild(pintarMensaje(m, i === 0, id, permiso.modera)));
+  datos.mensajes.forEach((m, i) => hilo.appendChild(pintarMensaje(m, i === 0, id, permiso.modera)));
 
   if (datos.tema.cerrado) {
     const cerrado = crear("div", "aviso");
     cerrado.appendChild(crear("b", null, "Este tema está cerrado"));
     cerrado.appendChild(document.createTextNode("No se pueden escribir más respuestas."));
-    donde.appendChild(cerrado);
-    return;
+    hilo.appendChild(cerrado);
+  } else {
+    hilo.appendChild(cajaDeResponder(id, permiso));
   }
-  donde.appendChild(cajaDeResponder(id, permiso));
+  donde.appendChild(hilo);
 }
 
-// La fila de moderar, que solo ve quien modera. Va arriba del todo y en gris:
-// son botones para cuando algo va mal, no para usarlos cada dia.
+// La fila de moderar, que solo ve quien modera. Va arriba y con raya de
+// puntos: son botones para cuando algo va mal, no para usarlos cada día.
 function botonesDeModerar(tema) {
   const fila = crear("div", "moderar");
   fila.appendChild(crear("span", null, "Moderar:"));
 
-  const cerrar = crear("button", "btn gris pequeno",
-    tema.cerrado ? "Reabrir el tema" : "Cerrar el tema");
+  const cerrar = crear("button", "boton gris pequeno", tema.cerrado ? "Reabrir el tema" : "Cerrar el tema");
   cerrar.onclick = async () => {
     cerrar.disabled = true;
     try {
@@ -444,13 +606,11 @@ function botonesDeModerar(tema) {
   };
   fila.appendChild(cerrar);
 
-  const quitar = crear("button", "btn gris pequeno", "Quitar el tema entero");
+  const quitar = crear("button", "boton gris pequeno", "Quitar el tema entero");
   quitar.onclick = async () => {
     if (!confirm("¿Quitar este tema y todo lo que hay dentro?")) return;
     try {
-      await pedir("/api/foro/ocultar", {
-        method: "POST", body: JSON.stringify({ tema: tema.id }),
-      });
+      await pedir("/api/foro/ocultar", { method: "POST", body: JSON.stringify({ tema: tema.id }) });
       location.hash = "#/";
     } catch (e) { quitar.textContent = e.message; }
   };
@@ -479,12 +639,10 @@ function pintarMensaje(m, esPrimero, tema, modera) {
   caja.appendChild(cuerpo);
 
   const abajo = crear("div", "abajo");
-  // La primera entrada de un hilo es la pregunta, y marcarla como útil no
-  // significa nada: lo que se marca son las respuestas.
-  //
+  // La pregunta no se marca como útil: lo que se marca son las respuestas.
   // Quien no ha entrado, y el autor sobre lo suyo, ven el número pero no un
-  // botón. Enseñar algo que se puede pulsar para llevarse un no es peor que
-  // no enseñarlo, y así nadie se encuentra con un aviso del navegador.
+  // botón: enseñar algo que se puede pulsar para llevarse un no es peor que
+  // no enseñarlo.
   if (!esPrimero) {
     const puedeMarcar = yo && yo.usuario !== m.autor;
     if (puedeMarcar) {
@@ -498,9 +656,7 @@ function pintarMensaje(m, esPrimero, tema, modera) {
       };
       abajo.appendChild(util);
     } else if (m.ayudas > 0) {
-      const dice = m.ayudas === 1
-        ? "A una persona le ayudó"
-        : "A " + m.ayudas + " personas les ayudó";
+      const dice = m.ayudas === 1 ? "A una persona le ayudó" : "A " + m.ayudas + " personas les ayudó";
       abajo.appendChild(crear("span", "util quieto", dice));
     }
   }
@@ -516,8 +672,42 @@ function pintarMensaje(m, esPrimero, tema, modera) {
     };
     abajo.appendChild(borrar);
   }
+  // Avisar de algo no pide cuenta: quien ve un insulto o algo ilegal no
+  // tiene por qué tener una. Va por correo, con el enlace ya puesto, porque
+  // detrás no hay más que una persona leyendo ese buzón.
+  if (!esMio) {
+    const avisar = crear("a", "avisar", "Avisar");
+    const donde = "https://foro.fal-lang.org/#/t/" + tema + " (mensaje " + m.id + ")";
+    avisar.href = "mailto:nissanbusiness@duck.com?subject=" + encodeURIComponent("Aviso sobre un mensaje del foro") +
+      "&body=" + encodeURIComponent("El mensaje: " + donde + "\n\nQué pasa con él:\n");
+    avisar.title = "Avisar a quien modera de que este mensaje incumple las normas o la ley";
+    abajo.appendChild(avisar);
+  }
   if (abajo.children.length) caja.appendChild(abajo);
   return caja;
+}
+
+// Un textarea con su cuenta de letras, que se pone en rojo al acercarse al
+// tope, y Ctrl+Intro para mandar.
+function areaDeTexto(textoAyuda, alMandar) {
+  const area = document.createElement("textarea");
+  area.placeholder = textoAyuda;
+  area.maxLength = LIMITE;
+  const letras = crear("span", "cuenta-letras", "");
+  area.addEventListener("input", () => {
+    letras.textContent = area.value.length ? area.value.length + " / " + LIMITE : "";
+    letras.classList.toggle("cerca", area.value.length > LIMITE * 0.9);
+  });
+  area.addEventListener("keydown", (ev) => {
+    if ((ev.ctrlKey || ev.metaKey) && ev.key === "Enter") { ev.preventDefault(); alMandar(); }
+  });
+  return { area, letras };
+}
+
+function ponerError(caja, mensaje) {
+  const error = caja.querySelector(".error-caja") || crear("p", "error-caja");
+  error.textContent = mensaje;
+  caja.insertBefore(error, caja.querySelector(".abajo"));
 }
 
 // La caja de responder solo aparece si se puede responder. Si no, dice por
@@ -526,29 +716,26 @@ function cajaDeResponder(tema, permiso) {
   if (!permiso.puede) return cajaDePermiso(permiso);
 
   const caja = crear("div", "escribir");
-  caja.appendChild(crear("h3", null, "Responder"));
-  const area = document.createElement("textarea");
-  area.placeholder = "Lo que quieras decir. Para pegar código, ponlo entre tres comillas invertidas.";
+  caja.appendChild(crear("div", "cabeza", "Responder"));
+  const enviar = crear("button", "boton lleno", "Responder");
+  const { area, letras } = areaDeTexto(
+    "Lo que quieras decir. Para pegar código, ponlo entre tres comillas invertidas.", () => enviar.click());
   caja.appendChild(area);
-
   const abajo = crear("div", "abajo");
-  const enviar = crear("button", "btn lleno", "Responder");
   abajo.appendChild(enviar);
-  const letras = crear("span", "cuenta-letras", "");
+  abajo.insertAdjacentHTML("beforeend", '<span class="ayuda teclas"><kbd>Ctrl</kbd> + <kbd>Intro</kbd></span>');
   abajo.appendChild(letras);
   caja.appendChild(abajo);
-  area.addEventListener("input", () => { letras.textContent = area.value.length + " / 8000"; });
 
   enviar.onclick = async () => {
     enviar.disabled = true;
     enviar.textContent = "Mandando…";
     try {
       await pedir("/api/foro/mensajes", { method: "POST", body: JSON.stringify({ tema, cuerpo: area.value }) });
-      pintarTema(tema);
+      await pintarTema(tema);
+      donde.querySelector(".mensaje:last-of-type")?.scrollIntoView({ block: "center" });
     } catch (e) {
-      const error = caja.querySelector(".error-caja") || crear("p", "error-caja");
-      error.textContent = e.message;
-      caja.appendChild(error);
+      ponerError(caja, e.message);
       enviar.disabled = false;
       enviar.textContent = "Responder";
     }
@@ -560,9 +747,8 @@ function cajaDePermiso(permiso) {
   const caja = crear("div", "aviso");
   if (!yo) {
     caja.appendChild(crear("b", null, "Para escribir hace falta una cuenta"));
-    caja.appendChild(document.createTextNode(
-      "Leer no la pide. Se crea en el curso, sin correo ni nada parecido."));
-    const ir = crear("p", null);
+    caja.appendChild(document.createTextNode("Leer no la pide. Se crea en el curso, sin correo ni nada parecido."));
+    const ir = crear("p");
     const enlace = crear("a", null, "Ir al curso");
     enlace.href = ACADEMIA;
     ir.appendChild(enlace);
@@ -573,56 +759,65 @@ function cajaDePermiso(permiso) {
   caja.appendChild(document.createTextNode(
     "Son cinco lecciones y es lo que mantiene el foro limpio de programas que " +
     "escriben solos. A ti te va a costar un rato; a un robot, aprender a programar."));
-  const ir = crear("p", null);
-  const enlace = crear("a", null,
-    permiso.faltan ? "Te faltan " + permiso.faltan + ". Seguir el curso" : "Seguir el curso");
+  const ir = crear("p");
+  const enlace = crear("a", null, permiso.faltan ? "Te faltan " + permiso.faltan + ". Seguir el curso" : "Seguir el curso");
   enlace.href = ACADEMIA;
   ir.appendChild(enlace);
   caja.appendChild(ir);
   return caja;
 }
 
-async function pintarNuevo() {
-  donde.innerHTML = "";
-  const volver = crear("a", null, "← Volver al foro");
-  volver.href = "#/";
-  volver.style.fontSize = "14px";
-  donde.appendChild(volver);
+// --- Escribir un tema ----------------------------------------------------
 
-  const h1 = crear("h1", null, "Escribir algo nuevo");
-  h1.style.margin = "12px 0 20px";
-  h1.style.fontSize = "26px";
-  donde.appendChild(h1);
+async function pintarNuevo(categoriaElegida) {
+  donde.innerHTML = "";
+  const hilo = crear("div", "hilo");
+  hilo.appendChild(enlaceVolver());
+  const cabeza = crear("header", "hilo-cabeza");
+  cabeza.appendChild(crear("h1", null, "Escribir algo nuevo"));
+  hilo.appendChild(cabeza);
+  donde.appendChild(hilo);
+  document.title = "Escribir · Foro de Fal";
 
   const permiso = await pedir("/api/foro/puedo").catch(() => ({ puede: false }));
-  if (!permiso.puede) { donde.appendChild(cajaDePermiso(permiso)); return; }
+  if (!permiso.puede) { hilo.appendChild(cajaDePermiso(permiso)); return; }
 
   const caja = crear("div", "escribir");
-  const elegir = document.createElement("select");
-  for (const c of categorias) {
-    const o = document.createElement("option");
-    o.value = c.clave;
-    o.textContent = c.nombre + " · " + c.resumen;
-    elegir.appendChild(o);
-  }
+  const elegir = crear("div", "elegir");
+  elegir.setAttribute("role", "radiogroup");
+  elegir.setAttribute("aria-label", "Categoría");
+  categorias.forEach((c, n) => {
+    const label = document.createElement("label");
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "categoria";
+    radio.value = c.clave;
+    radio.checked = categoriaElegida ? c.clave === categoriaElegida : n === 0;
+    label.appendChild(radio);
+    label.appendChild(crear("b", null, c.nombre));
+    label.appendChild(document.createTextNode(c.resumen));
+    elegir.appendChild(label);
+  });
   caja.appendChild(elegir);
 
   const titulo = document.createElement("input");
   titulo.placeholder = "Un título que diga de qué va";
   titulo.maxLength = 120;
+  titulo.setAttribute("aria-label", "Título");
   caja.appendChild(titulo);
 
-  const area = document.createElement("textarea");
-  area.placeholder = "Cuenta lo que pasa. Si es un fallo, pega el programa entre tres comillas invertidas y di qué esperabas que hiciera.";
+  const enviar = crear("button", "boton lleno", "Publicar");
+  const { area, letras } = areaDeTexto(
+    "Cuenta lo que pasa. Si es un fallo, pega el programa entre tres comillas invertidas y di qué esperabas que hiciera.",
+    () => enviar.click());
+  area.setAttribute("aria-label", "Mensaje");
   caja.appendChild(area);
 
   const abajo = crear("div", "abajo");
-  const enviar = crear("button", "btn lleno", "Publicar");
   abajo.appendChild(enviar);
-  const letras = crear("span", "cuenta-letras", "");
+  abajo.appendChild(crear("span", "ayuda", "El código entre ``` sale con colores."));
   abajo.appendChild(letras);
   caja.appendChild(abajo);
-  area.addEventListener("input", () => { letras.textContent = area.value.length + " / 8000"; });
 
   enviar.onclick = async () => {
     enviar.disabled = true;
@@ -630,19 +825,22 @@ async function pintarNuevo() {
     try {
       const r = await pedir("/api/foro/temas", {
         method: "POST",
-        body: JSON.stringify({ categoria: elegir.value, titulo: titulo.value, cuerpo: area.value }),
+        body: JSON.stringify({
+          categoria: elegir.querySelector("input:checked").value, titulo: titulo.value, cuerpo: area.value,
+        }),
       });
       location.hash = "#/t/" + r.tema;
     } catch (e) {
-      const error = caja.querySelector(".error-caja") || crear("p", "error-caja");
-      error.textContent = e.message;
-      caja.appendChild(error);
+      ponerError(caja, e.message);
       enviar.disabled = false;
       enviar.textContent = "Publicar";
     }
   };
-  donde.appendChild(caja);
+  hilo.appendChild(caja);
+  titulo.focus();
 }
+
+// --- Un perfil -----------------------------------------------------------
 
 async function pintarPerfil(nombre) {
   donde.innerHTML = "";
@@ -650,17 +848,15 @@ async function pintarPerfil(nombre) {
   try {
     p = await pedir("/api/foro/perfil/" + encodeURIComponent(nombre));
   } catch (e) {
-    donde.appendChild(crear("p", "vacio", e.message));
+    donde.appendChild(enlaceVolver());
+    donde.appendChild(crear("p", "cargando", e.message));
     return;
   }
+  document.title = p.usuario + " · Foro de Fal";
 
-  const volver = crear("a", null, "← Volver al foro");
-  volver.href = "#/";
-  volver.style.fontSize = "14px";
-  donde.appendChild(volver);
-
+  const hilo = crear("div", "hilo");
+  hilo.appendChild(enlaceVolver());
   const cabeza = crear("div", "perfil-cabeza");
-  cabeza.style.marginTop = "14px";
   cabeza.appendChild(crear("h1", null, p.usuario));
   if (p.fundador) {
     const chapa = crear("span", "chapa", "beta");
@@ -672,8 +868,8 @@ async function pintarPerfil(nombre) {
     chapa.title = "Puede cerrar temas y quitar mensajes.";
     cabeza.appendChild(chapa);
   }
-  donde.appendChild(cabeza);
-  donde.appendChild(crear("p", "perfil-desde", "Por aquí desde " + cuando(p.desde)));
+  hilo.appendChild(cabeza);
+  hilo.appendChild(crear("p", "perfil-desde", "Por aquí desde " + cuando(p.desde)));
 
   const numeros = crear("div", "numeros");
   const cuentas = [
@@ -687,10 +883,10 @@ async function pintarPerfil(nombre) {
     d.appendChild(crear("span", null, n === 1 ? uno : varios));
     numeros.appendChild(d);
   }
-  donde.appendChild(numeros);
+  hilo.appendChild(numeros);
 
   if (p.marcas.length) {
-    donde.appendChild(crear("h2", "seccion", "Marcas"));
+    hilo.appendChild(crear("h2", "seccion", "Marcas"));
     const rejilla = crear("div", "marcas");
     for (const m of p.marcas) {
       const c = crear("div", "marca-caja");
@@ -699,36 +895,37 @@ async function pintarPerfil(nombre) {
       c.appendChild(crear("i", null, "desde " + cuando(m.ganada)));
       rejilla.appendChild(c);
     }
-    donde.appendChild(rejilla);
+    hilo.appendChild(rejilla);
   }
 
-  if (p.temas.length) {
-    donde.appendChild(crear("h2", "seccion", "Ha abierto"));
-    for (const t of p.temas) {
-      const c = crear("div", "mini");
-      const a = crear("a", null, t.titulo);
-      a.href = "#/t/" + t.id;
-      c.appendChild(a);
-      c.appendChild(crear("p", null, t.categoriaNombre + " · " + cuando(t.creado)));
-      donde.appendChild(c);
-    }
-  }
-
-  if (p.respuestas.length) {
-    donde.appendChild(crear("h2", "seccion", "Ha respondido en"));
-    for (const r of p.respuestas) {
-      const c = crear("div", "mini");
-      const a = crear("a", null, r.titulo);
-      a.href = "#/t/" + r.tema;
-      c.appendChild(a);
-      c.appendChild(crear("p", null, r.cuerpo));
-      donde.appendChild(c);
-    }
-  }
+  const lista = (titulo, cosas, pintarUna) => {
+    if (!cosas.length) return;
+    hilo.appendChild(crear("h2", "seccion", titulo));
+    const ul = crear("ul", "mini");
+    for (const cosa of cosas) ul.appendChild(pintarUna(cosa));
+    hilo.appendChild(ul);
+  };
+  lista("Ha abierto", p.temas, (t) => {
+    const li = document.createElement("li");
+    const a = crear("a", null, t.titulo);
+    a.href = "#/t/" + t.id;
+    li.appendChild(a);
+    li.appendChild(crear("p", null, t.categoriaNombre + " · " + cuando(t.creado)));
+    return li;
+  });
+  lista("Ha respondido en", p.respuestas, (r) => {
+    const li = document.createElement("li");
+    const a = crear("a", null, r.titulo);
+    a.href = "#/t/" + r.tema;
+    li.appendChild(a);
+    li.appendChild(crear("p", null, r.cuerpo.replace(/```/g, " ")));
+    return li;
+  });
 
   if (!p.temas.length && !p.respuestas.length) {
-    donde.appendChild(crear("p", "vacio", "Todavía no ha escrito nada por aquí."));
+    hilo.appendChild(crear("p", "cargando", "Todavía no ha escrito nada por aquí."));
   }
+  donde.appendChild(hilo);
 }
 
 // --- La cuenta y el reparto ---------------------------------------------
@@ -737,7 +934,7 @@ function pintarCuenta() {
   const zona = $("zonaCuenta");
   zona.innerHTML = "";
   if (!yo) {
-    const a = crear("a", null, "Entrar");
+    const a = crear("a", "boton pequeno", "Entrar");
     a.href = ACADEMIA;
     a.style.color = "var(--azul)";
     zona.appendChild(a);
@@ -752,9 +949,10 @@ function pintarCuenta() {
 
 function repartir() {
   const ruta = location.hash.replace(/^#/, "") || "/";
+  document.title = "Foro de Fal";
   if (ruta.startsWith("/t/")) return pintarTema(parseInt(ruta.slice(3), 10));
   if (ruta.startsWith("/u/")) return pintarPerfil(decodeURIComponent(ruta.slice(3)));
-  if (ruta === "/nuevo") return pintarNuevo();
+  if (ruta === "/nuevo" || ruta.startsWith("/nuevo/")) return pintarNuevo(ruta.slice(7));
   // Una categoría puede llevar número de página detrás: /c/dudas/2. Sin
   // categoría el número va solo: /p/2.
   if (ruta.startsWith("/c/")) {
@@ -766,6 +964,7 @@ function repartir() {
 }
 
 window.addEventListener("hashchange", () => { repartir(); window.scrollTo(0, 0); });
+addEventListener("resize", () => { const p = document.querySelector(".pestanas"); if (p) moverIndicador(p); });
 
 (async () => {
   const [quien, cats] = await Promise.all([
@@ -779,16 +978,6 @@ window.addEventListener("hashchange", () => { repartir(); window.scrollTo(0, 0);
   repartir();
 })();
 </script>
-
-
-<footer class="legal">
-  <div>
-    <a href="https://fal-lang.org/aviso-legal.html">Aviso legal</a>
-    <a href="https://fal-lang.org/privacidad.html">Privacidad</a>
-    <a href="https://fal-lang.org/cookies.html">Cookies</a>
-    <a href="https://github.com/NissanBoss/Fal">Codigo</a>
-  </div>
-</footer>
 
 </body>
 </html>

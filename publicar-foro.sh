@@ -23,6 +23,11 @@ cp web/cuenta.js foro-publico/cuenta.js
 # apuntaria al vacio es dejar una trampa puesta para el que venga.
 cp web/trabajo.js web/obrero.js web/vista-previa-foro.png foro-publico/
 
+# La hoja, el resaltado del codigo y las letras que comparte con el curso.
+# Sin ellos el foro sale con la letra del sistema y el codigo en gris.
+cp web/comun.css web/pintar.js foro-publico/
+cp -r web/fuentes foro-publico/fuentes
+
 # El icono. Va a la raiz porque el navegador pide
 # /favicon.ico por su cuenta, sin mirar la pagina.
 cp web/favicon.svg web/favicon.ico web/apple-touch-icon.png foro-publico/
