@@ -554,6 +554,20 @@ function guardar() {
   }, 2500);
 }
 
+// Al salir de la cuenta o borrarla, lo de este navegador se va con ella.
+// Se quedaba, y en un ordenador compartido el siguiente que entraba se
+// llevaba a su cuenta el progreso y el código del anterior al juntarlos.
+function olvidarEsteNavegador() {
+  clearTimeout(esperando);
+  try { localStorage.removeItem(LLAVE); } catch (e) {}
+  hechas = new Set();
+  borradores = {};
+  mirados = new Set();
+  actual = 0;
+  pintarIndice();
+  pintarLeccion();
+}
+
 // --- Pintar --------------------------------------------------------------
 
 function pintarIndice() {
@@ -1225,6 +1239,7 @@ $("yoSalir").onclick = async () => {
   try { await cuenta.salir(); } catch (e) {}
   $("dialogoYo").close();
   pintarCuenta(null);
+  olvidarEsteNavegador();
 };
 $("borrarEmpezar").onclick = () => {
   $("filaBorrar").hidden = true;
@@ -1250,6 +1265,7 @@ $("formBorrar").onsubmit = async (ev) => {
     await cuenta.borrarme();
     $("dialogoYo").close();
     pintarCuenta(null);
+    olvidarEsteNavegador();
   } catch (e) {
     $("borrarError").textContent = e.message || "No se pudo borrar. Prueba otra vez en un rato.";
     $("borrarError").hidden = false;
@@ -1267,6 +1283,7 @@ async function sincronizar() {
     const junto = juntarProgresos(comoObjeto(), alla);
     hechas = new Set(junto.hechas);
     borradores = junto.borradores;
+    mirados = new Set(junto.mirados);
     if (Number.isInteger(junto.actual)) actual = junto.actual;
     guardar();
     await cuenta.subirProgreso(comoObjeto());

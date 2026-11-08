@@ -137,12 +137,21 @@ export const cuenta = {
     }
   },
 
-  async rescatar(usuario, codigo, claveNueva) {
+  // El rescate pide la prueba de trabajo siempre. La primera llamada va sin
+  // ella solo para recibir la semilla, igual que al entrar tras un fallo.
+  async rescatar(usuario, codigo, claveNueva, avisar) {
     const estirado = await estirar(usuario, claveNueva);
-    return llamar("/api/rescate", {
+    const mandar = (nonce) => llamar("/api/rescate", {
       method: "POST",
-      body: JSON.stringify({ usuario, rescate: codigo, estirado }),
+      body: JSON.stringify({ usuario, rescate: codigo, estirado, nonce }),
     });
+    try {
+      return await mandar();
+    } catch (fallo) {
+      if (!fallo.reto) throw fallo;
+      const { nonce } = await resolverReto(fallo.reto, avisar);
+      return mandar(nonce);
+    }
   },
 
   salir() {
@@ -191,10 +200,15 @@ export function juntarProgresos(aqui, alla) {
     const otro = borradores[leccion] || "";
     if (typeof texto === "string" && texto.length > otro.length) borradores[leccion] = texto;
   }
+  // Las soluciones vistas se juntan tambien. Antes se perdian, y al entrar
+  // desde otro navegador se subia la lista vacia: la cuenta ganaba la marca
+  // de hacerlo todo sin mirar aunque hubiera mirado la mitad.
+  const mirados = new Set([...(aqui.mirados || []), ...(alla.mirados || [])]);
   return {
     hechas: [...hechas].sort((a, b) => a - b),
     actual: Math.max(aqui.actual || 0, alla.actual || 0),
     borradores,
+    mirados: [...mirados].sort((a, b) => a - b),
   };
 }
 
