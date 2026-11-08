@@ -10,9 +10,10 @@
 // por separado, y si el numero de vueltas o la sal se separan un dia, todo
 // seguira compilando y nadie podra entrar.
 
-import * as paraPruebas from "./secretos.js";
-import { VUELTAS_CLIENTE } from "./secretos.js";
+import * as paraPruebas from "./contrasenas.js";
+import { VUELTAS_CLIENTE } from "./contrasenas.js";
 import { limpiar, resumir } from "./foro.js";
+import { SENUELO } from "./contrasenas.js";
 import {
   modulosCompletos, marcasDelCurso, puedeEscribir,
   LECCIONES_POR_MODULO, TOTAL_LECCIONES, FUNDADORES,
@@ -224,6 +225,13 @@ console.log("\nQuien puede escribir y que marcas le tocan");
     modulosCompletos(hechas(TOTAL_LECCIONES)) === LECCIONES_POR_MODULO.length
   );
 
+  // La leccion 0 repetida cinco veces abria el foro: contaba como el
+  // primer modulo entero.
+  const repetida = Array(TOTAL_LECCIONES).fill(0);
+  comprueba("una leccion repetida no completa un modulo", modulosCompletos(repetida) === 0);
+  comprueba("ni deja escribir en el foro", !puedeEscribir({ hechas: repetida }));
+  comprueba("ni da la marca del curso", !marcasDelCurso(500, { hechas: repetida }).includes("curso"));
+
   const deLosPrimeros = marcasDelCurso(1, { hechas: hechas(TOTAL_LECCIONES), mirados: [] });
   comprueba("la cuenta numero uno es fundador", deLosPrimeros.includes("fundador"));
   comprueba("y se lleva la del curso entero", deLosPrimeros.includes("curso"));
@@ -247,6 +255,89 @@ console.log("\nQuien puede escribir y que marcas le tocan");
     "nadie se lleva marcas por un progreso vacio",
     marcasDelCurso(FUNDADORES + 1, { hechas: [] }).length === 0
   );
+}
+
+console.log("\nLo que no se ve: el señuelo y la galleta");
+{
+  // El señuelo con el que se compara cuando el nombre no existe. Si no
+  // tiene la forma exacta de un secreto guardado, coincide() lo rechaza por
+  // el formato y vuelve sin hacer el resumen, y entonces un nombre que no
+  // existe contesta antes que uno que si. Eso es una lista de quien tiene
+  // cuenta, servida a quien mida los tiempos. Estuvo asi y no se noto,
+  // porque por fuera todo funcionaba igual.
+  const trozos = SENUELO.split("$");
+  comprueba("el señuelo tiene las tres partes", trozos.length === 3);
+  comprueba("el señuelo empieza por la version que coincide() exige", trozos[0] === "s1");
+  comprueba("la sal del señuelo mide lo que las de verdad", /^[0-9a-f]{32}$/.test(trozos[1]));
+  comprueba("el resumen del señuelo mide lo que los de verdad", /^[0-9a-f]{64}$/.test(trozos[2]));
+
+  const guardadoDeVerdad = await guardarSecreto("lo que sea");
+  const formaDeVerdad = guardadoDeVerdad.split("$").map((t) => t.length);
+  comprueba(
+    "el señuelo tiene la misma forma que un secreto guardado de verdad",
+    JSON.stringify(formaDeVerdad) === JSON.stringify(trozos.map((t) => t.length))
+  );
+  comprueba("y nada coincide con el", (await coincide("cualquier cosa", SENUELO)) === false);
+
+  // La galleta lleva el prefijo __Host-, que el navegador solo acepta si
+  // viene por HTTPS, con Path=/ y sin atributo Domain. Sin ese prefijo,
+  // otro subdominio de fal-lang.org podia poner una cookie con el mismo
+  // nombre para todo el dominio y colarla junto a la buena.
+  const servidor = readFileSync(new URL("./servidor.js", import.meta.url), "utf8");
+  comprueba("la galleta lleva el prefijo __Host-", servidor.includes('"__Host-sesion"'));
+  comprueba(
+    "no queda ninguna galleta con el nombre viejo",
+    !/[^-]\bsesion=/.test(servidor.replace(/\$\{GALLETA\}=/g, ""))
+  );
+  comprueba(
+    "la galleta nunca sale sin Secure ni sin HttpOnly",
+    !/\$\{GALLETA\}=[^`]*`/.test(servidor) ||
+      servidor.match(/\$\{GALLETA\}=[^`]*`/g).every(
+        (t) => t.includes("HttpOnly") && t.includes("Secure") && t.includes("SameSite=Lax")
+      )
+  );
+  comprueba(
+    "el cuerpo de una peticion se mide antes de leerlo",
+    /content-length[\s\S]{0,200}await peticion\.text\(\)/.test(servidor)
+  );
+
+  // Cada fallo apuntado es una escritura, y el plan gratuito tiene cien mil
+  // al dia. Con nombres inventados se podian gastar sin pagar nada.
+  const apuntes = servidor.match(/[^\n]*await apuntarFallo\([^\n]*/g) || [];
+  comprueba(
+    "solo se apuntan fallos de cuentas que existen",
+    apuntes.length === 2 && apuntes.every((l) => /if \(fila\) await apuntarFallo/.test(l))
+  );
+  const rescate = servidor.slice(servidor.indexOf("async function rescatar"), servidor.indexOf("async function borrarme"));
+  comprueba(
+    "el rescate pide la prueba de trabajo antes de mirar el codigo",
+    rescate.indexOf("trabajoHecho(") > 0 && rescate.indexOf("trabajoHecho(") < rescate.indexOf("coincide(")
+  );
+
+  // Solo las paginas que hablan con la API. fal-lang.org no lo hace, y el
+  // localhost de probar va en .dev.vars.
+  const toml = readFileSync(new URL("./wrangler.toml", import.meta.url), "utf8");
+  const origenes = /^ORIGENES = "([^"]*)"/m.exec(toml)[1].split(",");
+  comprueba(
+    "la API solo atiende al foro y al curso",
+    JSON.stringify(origenes.sort()) ===
+      JSON.stringify(["https://aprende.fal-lang.org", "https://foro.fal-lang.org"])
+  );
+}
+
+console.log("\nAl entrar se juntan los dos progresos sin perder nada");
+{
+  // cuenta.js es del navegador y mira location y window al cargarse.
+  globalThis.location = { hostname: "aprende.fal-lang.org", protocol: "https:" };
+  globalThis.window = {};
+  const { juntarProgresos } = await import("../web/cuenta.js");
+  const junto = juntarProgresos(
+    { hechas: [0, 1], actual: 1, borradores: {}, mirados: [] },
+    { hechas: [2, 3], actual: 3, borradores: {}, mirados: [2] }
+  );
+  comprueba("las lecciones de los dos lados", JSON.stringify(junto.hechas) === "[0,1,2,3]");
+  // Antes se perdian, y la cuenta ganaba la marca de no haber mirado.
+  comprueba("las soluciones vistas tambien", JSON.stringify(junto.mirados) === "[2]");
 }
 
 console.log("");

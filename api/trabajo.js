@@ -55,6 +55,15 @@ export function semillaDeEntrada(usuario, ventana, fallos) {
   return "entrar:" + usuario.toLowerCase() + ":" + ventana + ":" + fallos;
 }
 
+// El rescate la pide siempre, no solo despues de fallar. No tenia ninguna,
+// y cada codigo equivocado era una escritura en la base de datos gratis para
+// quien llamara: con nombres inventados se podia gastar el cupo diario de
+// escrituras del plan gratuito sin pagar nada. Lleva los fallos dentro por
+// lo mismo que al entrar.
+export function semillaDeRescate(usuario, ventana, fallos) {
+  return "rescate:" + usuario.toLowerCase() + ":" + ventana + ":" + fallos;
+}
+
 function cerosDelante(bytes) {
   let ceros = 0;
   for (const b of bytes) {

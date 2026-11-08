@@ -28,12 +28,12 @@
 
 import {
   VUELTAS_CLIENTE, nombreValido, estiradoValido, guardarSecreto,
-  coincide, igualSinChivarse, resumen, alAzar, codigoDeRescate,
-} from "./secretos.js";
+  coincide, igualSinChivarse, resumen, alAzar, codigoDeRescate, SENUELO,
+} from "./contrasenas.js";
 import { repartirForo } from "./foro.js";
 import {
   CEROS_REGISTRO, CEROS_ENTRAR, ventanaAhora,
-  semillaDeRegistro, semillaDeEntrada, trabajoHecho,
+  semillaDeRegistro, semillaDeEntrada, semillaDeRescate, trabajoHecho,
 } from "./trabajo.js";
 import { marcasDelCurso, apuntarMarcas } from "./marcas.js";
 
@@ -63,6 +63,7 @@ const REGISTROS_POR_HORA = 20;
 // no admite espacios, asi que ningun nombre de persona puede chocar con
 // esta ni al derecho ni al reves.
 const CUPO_REGISTROS = "registros globales";
+
 
 // La puerta de entrada. La llama functions/api/[[camino]].js, que es lo que
 // Cloudflare Pages ejecuta para cualquier dirección que empiece por /api/.
@@ -317,11 +318,23 @@ async function entrar(peticion, entorno) {
   // Se comprueba igual aunque la cuenta no exista, para que el tiempo de
   // respuesta no diga si el nombre esta cogido. Sin esto, cualquiera puede
   // sacar la lista de quien tiene cuenta preguntando uno por uno.
-  const contra = fila ? fila.clave : "x$0000000000000000000000000000000000000000000000000000000000000000";
+  //
+  // El señuelo tiene que tener la forma exacta de un secreto guardado.
+  // Antes empezaba por "x" y le faltaba una de las tres partes, asi que
+  // coincide() lo rechazaba por el formato y volvia sin llegar a resumir
+  // nada. O sea que hacia justo lo contrario de lo que venia a hacer: el
+  // nombre que no existe contestaba antes que el que si, que es la señal
+  // que se queria borrar. Comprobado en pruebas.mjs.
+  const contra = fila ? fila.clave : SENUELO;
   const vale = await coincide(estirado, contra);
 
   if (!fila || !vale) {
-    await apuntarFallo(entorno, llave);
+    // Los fallos solo se apuntan si la cuenta existe. Con un nombre
+    // inventado no hay nada que proteger, y apuntarlo era regalar una
+    // escritura por peticion a quien quisiera agotar el cupo diario. Que
+    // esto deje ver que nombres existen da igual: los perfiles del foro ya
+    // son publicos.
+    if (fila) await apuntarFallo(entorno, llave);
     return responder({ error: "Ese nombre o esa contraseña no son." }, 401);
   }
   await limpiarFallos(entorno, llave);
@@ -336,7 +349,7 @@ async function salir(peticion, entorno) {
       .bind(await resumen(testigo)).run();
   }
   return responder({ hecho: true }, 200, null, {
-    "Set-Cookie": `sesion=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
+    "Set-Cookie": `${GALLETA}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
   });
 }
 
@@ -353,17 +366,25 @@ async function rescatar(peticion, entorno) {
   const cuerpo = await leerJSON(peticion);
   if (!cuerpo) return responder({ error: "no entiendo lo que me mandas" }, 400);
   const { usuario, rescate, estirado } = cuerpo;
-  if (!nombreValido(usuario) || !estiradoValido(estirado) || typeof rescate !== "string") {
+  if (!nombreValido(usuario) || !estiradoValido(estirado) ||
+      typeof rescate !== "string" || rescate.length > 64) {
     return responder({ error: "Faltan datos." }, 400);
   }
   const llave = usuario.toLowerCase();
   if (await castigado(entorno, "r:" + llave)) {
     return responder({ error: "Demasiados intentos. Espera un cuarto de hora." }, 429);
   }
+  const fallos = await cuantosFallos(entorno, "r:" + llave);
+  if (!(await trabajoHecho((v) => semillaDeRescate(usuario, v, fallos), cuerpo.nonce, CEROS_ENTRAR))) {
+    return responder({
+      error: "Falta la comprobacion.",
+      reto: { semilla: semillaDeRescate(usuario, ventanaAhora(), fallos), ceros: CEROS_ENTRAR },
+    }, 401);
+  }
   const fila = await entorno.DB.prepare("SELECT id, rescate FROM alumnos WHERE llave = ?")
     .bind(llave).first();
   if (!fila || !(await coincide(rescate.trim().toUpperCase(), fila.rescate))) {
-    await apuntarFallo(entorno, "r:" + llave);
+    if (fila) await apuntarFallo(entorno, "r:" + llave);
     return responder({ error: "Ese codigo de rescate no es." }, 401);
   }
 
@@ -423,7 +444,7 @@ async function borrarme(peticion, entorno) {
     entorno.DB.prepare("DELETE FROM alumnos WHERE id = ?").bind(alumno.id),
   ]);
   return responder({ hecho: true }, 200, null, {
-    "Set-Cookie": `sesion=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
+    "Set-Cookie": `${GALLETA}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
   });
 }
 
@@ -448,16 +469,18 @@ async function escribirProgreso(peticion, entorno) {
   // Se guarda una version limpia y no lo que venga. Nadie puede usar esto
   // como disco duro gratis ni meter aqui dentro cosas que luego se pinten
   // en la pagina de otro.
+  // Sin repetidos: la leccion 0 cinco veces contaba como el primer modulo
+  // entero, y eso abria el foro sin haber hecho nada.
+  const sinRepetir = (lista) => [...new Set(Array.isArray(lista) ? lista : [])]
+    .filter((n) => Number.isInteger(n) && n >= 0 && n < 500).slice(0, 500);
   const limpio = {
-    hechas: (Array.isArray(cuerpo.progreso.hechas) ? cuerpo.progreso.hechas : [])
-      .filter((n) => Number.isInteger(n) && n >= 0 && n < 500).slice(0, 500),
+    hechas: sinRepetir(cuerpo.progreso.hechas),
     actual: Number.isInteger(cuerpo.progreso.actual) ? Math.max(0, Math.min(499, cuerpo.progreso.actual)) : 0,
     // En cuáles se miró la solución. Se guarda para poder dar la marca de
     // haberlo sacado solo, y por eso llega del navegador y no se puede
     // comprobar: quien se engañe con esto solo se engaña a sí mismo, que es
     // un precio razonable por no vigilar a nadie.
-    mirados: (Array.isArray(cuerpo.progreso.mirados) ? cuerpo.progreso.mirados : [])
-      .filter((n) => Number.isInteger(n) && n >= 0 && n < 500).slice(0, 500),
+    mirados: sinRepetir(cuerpo.progreso.mirados),
     borradores: {},
   };
   const vienen = cuerpo.progreso.borradores;
@@ -508,14 +531,27 @@ async function abrirSesion(entorno, alumno) {
   const segundos = DIAS_DE_SESION * 24 * 60 * 60;
   // HttpOnly para que ningun script pueda leerla, Secure para que no salga
   // sin cifrar, y Lax porque la pagina y esto viven bajo el mismo dominio.
-  return `sesion=${testigo}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${segundos}`;
+  return `${GALLETA}=${testigo}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${segundos}`;
 }
+
+// El nombre de la cookie de sesion, con el prefijo __Host-.
+//
+// Ese prefijo no es decoracion: el navegador se niega a guardar una cookie
+// que lo lleve si no viene por HTTPS, con Path=/ y SIN atributo Domain. Y
+// eso ultimo es lo que importa aqui. Sin el prefijo, cualquier pagina de
+// otro subdominio de fal-lang.org podia poner una cookie llamada "sesion"
+// para todo el dominio, y esta llegaria junto a la buena. Con dos, se
+// cogia la primera, que la elige quien la puso.
+//
+// Cambiar el nombre cierra todas las sesiones abiertas una vez. Ahora que
+// hay poca gente sale barato; dentro de un año, no.
+const GALLETA = "__Host-sesion";
 
 function galletaDe(peticion) {
   const crudo = peticion.headers.get("Cookie") || "";
   for (const trozo of crudo.split(";")) {
     const [nombre, ...resto] = trozo.trim().split("=");
-    if (nombre === "sesion") return resto.join("=");
+    if (nombre === GALLETA) return resto.join("=");
   }
   return "";
 }
@@ -597,10 +633,20 @@ async function limpiarFallos(entorno, quien) {
 
 // --- Utilidades ----------------------------------------------------------
 
+const MAX_PETICION = 128 * 1024;
+
 async function leerJSON(peticion) {
+  // El tamaño se mira ANTES de leer. Antes se leia entero y se medía
+  // despues, o sea que para rechazar algo demasiado grande primero habia
+  // que metérselo en memoria: cualquiera podia hacer trabajar al servidor
+  // mandando un cuerpo enorme que iba a acabar en la basura.
+  const dice = parseInt(peticion.headers.get("content-length") || "0", 10);
+  if (Number.isFinite(dice) && dice > MAX_PETICION) return null;
   try {
     const texto = await peticion.text();
-    if (texto.length > 128 * 1024) return null;
+    // Y tambien despues: la cabecera la escribe quien llama, asi que puede
+    // mentir o no venir.
+    if (texto.length > MAX_PETICION) return null;
     return JSON.parse(texto);
   } catch (e) {
     return null;

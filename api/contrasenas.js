@@ -1,5 +1,9 @@
 // Contraseñas, códigos y comparaciones.
 //
+// Aquí no hay ningún secreto guardado, solo las funciones que los manejan.
+// El archivo se llamaba secretos.js y en un repositorio público ese nombre
+// invita a mirar dentro buscando lo que no hay.
+//
 // Esto vive fuera del worker por una razón que costó descubrir: el runtime
 // de Cloudflare mira lo que exporta el archivo principal y **rechaza el
 // despliegue entero** si encuentra algo que no sea un handler. Tener aquí
@@ -39,6 +43,16 @@ export async function guardarSecreto(texto) {
   const sal = alAzar(16);
   return "s1$" + sal + "$" + (await resumen(sal + ":" + texto));
 }
+
+// Con esto se compara cuando el nombre que se prueba no existe, para tardar
+// lo mismo que cuando si existe. Tiene que tener la forma exacta de lo que
+// devuelve guardarSecreto(): tres partes, sal de 32 letras y resumen de 64.
+// Si no la tiene, coincide() lo rechaza por el formato y vuelve sin llegar a
+// resumir nada, y entonces un nombre que no existe contesta antes que uno
+// que si. Eso es una lista de quien tiene cuenta para quien mida los
+// tiempos. Vive aqui, y no en el servidor, porque el runtime de Cloudflare
+// rechaza el despliegue si el worker exporta algo que no sea un handler.
+export const SENUELO = "s1$" + "0".repeat(32) + "$" + "0".repeat(64);
 
 export async function coincide(texto, guardado) {
   const trozos = String(guardado).split("$");

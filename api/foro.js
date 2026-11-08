@@ -19,6 +19,9 @@ const MAX_TITULO = 120;
 const MAX_CUERPO = 8000;
 const TEMAS_POR_PAGINA = 25;
 const SEGUNDOS_ENTRE_MENSAJES = 20;
+const MENSAJES_AL_DIA = 30;
+const MENSAJES_EL_PRIMER_DIA = 5;
+const UN_DIA = 24 * 60 * 60 * 1000;
 
 export async function repartirForo(ruta, peticion, entorno, quienEs) {
   const metodo = peticion.method;
@@ -171,6 +174,25 @@ async function vaDemasiadoRapido(entorno, alumno) {
   return Date.now() - ultimo.creado < SEGUNDOS_ENTRE_MENSAJES * 1000;
 }
 
+// Un tope por dia, mas bajo el primer dia de la cuenta.
+//
+// El filtro del primer modulo no para a un programa: el progreso lo manda el
+// navegador y el servidor no puede comprobar que las lecciones se hicieran
+// de verdad. Sin esto, cada cuenta que pasa el filtro podia soltar un
+// mensaje cada veinte segundos, todo el dia. Los mensajes borrados cuentan
+// igual, para que borrar no devuelva el cupo.
+async function haEscritoDemasiado(entorno, alumno) {
+  const ahora = Date.now();
+  const fila = await entorno.DB.prepare(
+    "SELECT (SELECT creado FROM alumnos WHERE id = ?) AS desde, " +
+    "       (SELECT COUNT(*) FROM mensajes WHERE autor = ? AND creado > ?) AS hoy"
+  ).bind(alumno, alumno, ahora - UN_DIA).first();
+  const nueva = !fila || ahora - fila.desde < UN_DIA;
+  return (fila?.hoy || 0) >= (nueva ? MENSAJES_EL_PRIMER_DIA : MENSAJES_AL_DIA);
+}
+
+const PASA_DEL_TOPE = "Has escrito mucho por hoy. Mañana puedes seguir.";
+
 export function limpiar(texto, tope) {
   if (typeof texto !== "string") return "";
   // Se recorre letra a letra y se comparan numeros, sin escribir ningun
@@ -215,6 +237,7 @@ async function abrirTema(peticion, entorno, quienEs) {
   if (await vaDemasiadoRapido(entorno, quienEs.id)) {
     return json({ error: "Espera un momento antes de escribir otra vez." }, 429);
   }
+  if (await haEscritoDemasiado(entorno, quienEs.id)) return json({ error: PASA_DEL_TOPE }, 429);
 
   const ahora = Date.now();
   const puesto = await entorno.DB.prepare(
@@ -250,6 +273,7 @@ async function responder(peticion, entorno, quienEs) {
   if (await vaDemasiadoRapido(entorno, quienEs.id)) {
     return json({ error: "Espera un momento antes de escribir otra vez." }, 429);
   }
+  if (await haEscritoDemasiado(entorno, quienEs.id)) return json({ error: PASA_DEL_TOPE }, 429);
 
   const ahora = Date.now();
   const puesto = await entorno.DB.prepare(
@@ -351,7 +375,16 @@ export function resumir(cuerpo) {
 // ha conseguido, que es lo que la persona quiere enseñar; el detalle de en
 // qué ejercicio se atascó es asunto suyo.
 async function perfil(ruta, entorno) {
-  const nombre = decodeURIComponent(ruta.slice("/api/foro/perfil/".length));
+  // decodeURIComponent revienta con un porcentaje suelto, y ese fallo subia
+  // hasta el manejador de arriba y salia como un 500. Un 500 en un sitio
+  // donde deberia haber un 404 le dice a quien busca por donde entrar que
+  // ahi hay algo que no se esperaba lo que le acaban de mandar.
+  let nombre;
+  try {
+    nombre = decodeURIComponent(ruta.slice("/api/foro/perfil/".length));
+  } catch (e) {
+    return json({ error: "no hay nadie así" }, 404);
+  }
   if (!/^[a-zA-Z0-9_-]{3,24}$/.test(nombre)) return json({ error: "no hay nadie así" }, 404);
 
   const quien = await entorno.DB.prepare(

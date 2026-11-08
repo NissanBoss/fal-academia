@@ -64,10 +64,12 @@ function moduloDe(leccion) {
   return -1;
 }
 
-// Cuántos módulos están enteros.
+// Cuántos módulos están enteros. Cada lección cuenta una vez aunque venga
+// repetida: el progreso guardado antes de quitar los repetidos al recibirlo
+// puede traerlos todavía.
 export function modulosCompletos(hechas) {
   const porModulo = new Array(LECCIONES_POR_MODULO.length).fill(0);
-  for (const n of hechas) {
+  for (const n of new Set(hechas)) {
     const m = moduloDe(n);
     if (m >= 0) porModulo[m]++;
   }
@@ -84,7 +86,7 @@ export function marcasDelCurso(id, progreso) {
   const completos = modulosCompletos(hechas);
   if (completos >= 1) ganadas.push("primer_modulo");
   if (completos >= 3) ganadas.push("modulos_3");
-  if (hechas.length >= TOTAL_LECCIONES) ganadas.push("curso");
+  if (new Set(hechas).size >= TOTAL_LECCIONES) ganadas.push("curso");
 
   // Las lecciones resueltas sin pulsar «ver la solución». La academia
   // apunta cuáles fueron, y si esa lista no está, la marca simplemente no
