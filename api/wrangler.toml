@@ -1,29 +1,7 @@
-# Configuración del servidor de la academia.
-#
-# Va como proyecto de Cloudflare Pages y no como Worker suelto, aunque lo
-# único que sirve sea una API. El motivo es el dominio: un Worker con nombre
-# propio exige que fal-lang.org entero esté gestionado por Cloudflare, con
-# los nameservers cambiados en Namecheap. Pages se conforma con un CNAME, así
-# que api.fal-lang.org funciona sin mover nada de lo que ya está en marcha.
-#
-# Y que api cuelgue del mismo dominio que la academia no es estética: la
-# sesión viaja en una cookie, y las cookies se comparten por dominio. Desde
-# un nombre de otro sitio el navegador la trataría como de terceros y la
-# tiraría, así que nadie podría entrar y el fallo no diría por qué.
-#
-# Para ponerlo en marcha, los pasos están en LEEME.md.
-
 name = "fal-academia-api"
 compatibility_date = "2026-09-01"
 pages_build_output_dir = "publico"
 
-# Quién puede llamar a este servidor. Cualquier otra página se queda sin
-# respuesta utilizable, y además lo que cambie datos se rechaza de plano.
-#
-# Solo las dos páginas que de verdad hablan con la API. fal-lang.org estaba
-# aquí sin usarla, y un script colado allí habría podido actuar con la
-# sesión de quien la visitara. El
-# localhost de probar va en .dev.vars, que solo lee `wrangler pages dev`.
 [vars]
 ORIGENES = "https://foro.fal-lang.org,https://aprende.fal-lang.org"
 
@@ -32,8 +10,3 @@ binding = "DB"
 database_name = "fal-academia"
 database_id = "5e8461cb-1c6f-4e4a-bbe7-de2ef900ed34"
 
-# Aquí iba una sección para apagar los registros de peticiones, y Pages no
-# la admite en el archivo: la rechaza y no despliega. En Pages eso se
-# gobierna desde el panel, en el proyecto, apartado Logs. Merece la pena
-# entrar a apagarlo, porque lo que no se apunta no hace falta borrarlo
-# después, que es de lo que va todo este servidor.

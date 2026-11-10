@@ -1,23 +1,3 @@
-// Mete la politica de contenidos dentro de la propia pagina.
-//
-//   node poner-politica.mjs index.html foro.html
-//
-// GitHub Pages no deja poner cabeceras propias: sirve archivos y punto. La
-// unica forma de que estas paginas lleven politica de contenidos es una
-// etiqueta meta dentro del HTML, que cubre casi todo menos frame-ancestors.
-// Contra que metan la pagina en un marco ajeno se pone ademas un trozo que
-// la esconde si se abre dentro de otra: lo que no se ve no se puede pulsar
-// por engaño. El foro de verdad vive en Cloudflare, que si manda la
-// cabecera, pero esta copia del foro y el curso no tenian nada.
-//
-// Lo mismo hace herramientas/politica en el repositorio de Fal para
-// fal-lang.org. Si se cambia el trozo aqui, seguramente haya que cambiarlo
-// alli.
-//
-// Esto corre al publicar, sobre la copia que se sube, y no sobre el archivo
-// que se edita: un hash escrito en el fuente se queda viejo en cuanto
-// alguien toca una linea, y una politica vieja rompe la pagina sin decir
-// por que.
 
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -38,16 +18,12 @@ const CONTRA_MARCOS = "<style>html.en-marco{display:none}</style>\n" +
 for (const archivo of archivos) {
   let html = readFileSync(archivo, "utf8").replace(YA_ESTA, "").replace(CONTRA_MARCOS, "");
 
-  // Va lo primero de todo dentro de la cabecera. Una politica que llega
-  // despues de algo no protege a lo que ya se leyo.
   const ancla = "<meta charset=\"utf-8\">\n";
   if (!html.includes(ancla)) {
     console.error(archivo + ": no encuentro donde meterla");
     process.exit(1);
   }
 
-  // El trozo contra marcos se mete antes de calcular la politica: tambien es
-  // un script de dentro y tambien necesita su hash.
   html = html.replace(ancla, ancla + CONTRA_MARCOS);
   writeFileSync(archivo, html);
   const politica = execFileSync(

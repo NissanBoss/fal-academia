@@ -1,33 +1,9 @@
-// La parte de las cuentas que corre en el navegador.
-//
-// Aqui vive el trabajo caro de las contraseñas. La contraseña que escribe
-// el alumno no sale nunca de su maquina: lo que viaja es el resultado de
-// pasarla por PBKDF2 trescientas mil veces, y ese numero tiene que ser el
-// mismo que espera el servidor o no coincidira nunca.
-//
-// Se hace aqui porque el plan gratuito de Cloudflare da diez milisegundos
-// de procesador por peticion y esto gasta bastante mas. En un movil son dos
-// o tres decimas de segundo, una sola vez al entrar, y a cambio el curso no
-// cuesta dinero al mes.
 
-// Contra qué servidor se habla. En una máquina de trabajo se apunta solo al
-// `wrangler dev` de al lado, para poder probar el registro sin tocar el de
-// verdad ni tener que acordarse de deshacer el cambio antes de publicar.
-// Se reutiliza el mismo nombre de máquina que tenga la página, no uno
-// fijo. Con la página en "localhost" y el servidor en "127.0.0.1" el
-// navegador los considera dos sitios distintos, la cookie de sesión no
-// viaja y todo contesta que no has entrado, que es exactamente el mismo
-// fallo que daría en producción si la API no colgara de fal-lang.org.
 const enCasa = location.hostname === "localhost" || location.hostname === "127.0.0.1";
 const API = window.FAL_API ||
   (enCasa ? location.protocol + "//" + location.hostname + ":8787" : "https://api.fal-lang.org");
 const VUELTAS = 300000;
 
-// La sal es el nombre del alumno con un prefijo de este sitio. Tiene que
-// poder calcularse sin preguntarle nada al servidor, porque si no habria
-// que pedirsela antes de entrar y eso diria de paso que nombres existen.
-// El prefijo esta para que la misma contraseña en otro sitio no acabe
-// dando el mismo resultado que aqui.
 async function estirar(usuario, clave) {
   const codificador = new TextEncoder();
   const material = await crypto.subtle.importKey(
@@ -49,8 +25,6 @@ async function estirar(usuario, clave) {
 async function llamar(camino, opciones) {
   const respuesta = await fetch(API + camino, {
     ...opciones,
-    // Sin esto el navegador no manda la galleta de sesion y todo contesta
-    // que no has entrado, aunque hayas entrado.
     credentials: "include",
     headers: { "content-type": "application/json", ...(opciones && opciones.headers) },
   });
@@ -61,18 +35,12 @@ async function llamar(camino, opciones) {
   if (!respuesta.ok) {
     const fallo = new Error(cuerpo.error || "No se ha podido conectar con la academia.");
     fallo.estado = respuesta.status;
-    // Si el servidor pide una prueba de trabajo, viene aqui dentro y quien
-    // llamo puede resolverla y volver a intentarlo.
     fallo.reto = cuerpo.reto;
     throw fallo;
   }
   return cuerpo;
 }
 
-// Resuelve la prueba de trabajo en un hilo aparte, para no congelar la
-// pagina el segundo que tarda. Si por lo que sea no se puede abrir el hilo,
-// se hace aqui mismo: mas vale una pagina tiesa un segundo que una que no
-// deja registrarse.
 function resolverReto(reto, avisar) {
   return new Promise((listo, falla) => {
     const aMano = () => import("./trabajo.js")
@@ -86,7 +54,6 @@ function resolverReto(reto, avisar) {
       return;
     }
     obrero.onmessage = (aviso) => {
-      // Los avisos de como va llegan por el mismo canal que el resultado.
       if (aviso.data && aviso.data.van !== undefined) {
         if (avisar) avisar(aviso.data.van);
         return;
@@ -104,13 +71,8 @@ function resolverReto(reto, avisar) {
 }
 
 export const cuenta = {
-  // El tercer argumento, si se pasa, va recibiendo cuantos intentos lleva
-  // la prueba de trabajo. Sirve para poder enseñar que esta pasando algo:
-  // una espera muda de dos segundos parece una pagina rota.
   async registrar(usuario, clave, avisar) {
     const estirado = await estirar(usuario, clave);
-    // Antes de crear una cuenta hay que pagar un poco de trabajo. Se pide
-    // la semilla, se resuelve aqui, y va con el resto.
     const reto = await llamar("/api/reto?usuario=" + encodeURIComponent(usuario), { method: "GET" });
     const { nonce } = await resolverReto(reto, avisar);
     return llamar("/api/registro", {
@@ -119,9 +81,6 @@ export const cuenta = {
     });
   },
 
-  // Entrar no pide trabajo la primera vez. Solo si ya se ha fallado antes
-  // con ese nombre, y entonces el servidor manda la semilla dentro del
-  // error y se reintenta una vez sin molestar a nadie.
   async entrar(usuario, clave, avisar) {
     const estirado = await estirar(usuario, clave);
     const mandar = (nonce) => llamar("/api/entrar", {
@@ -137,8 +96,6 @@ export const cuenta = {
     }
   },
 
-  // El rescate pide la prueba de trabajo siempre. La primera llamada va sin
-  // ella solo para recibir la semilla, igual que al entrar tras un fallo.
   async rescatar(usuario, codigo, claveNueva, avisar) {
     const estirado = await estirar(usuario, claveNueva);
     const mandar = (nonce) => llamar("/api/rescate", {
@@ -166,8 +123,6 @@ export const cuenta = {
     try {
       return await llamar("/api/yo", { method: "GET" });
     } catch (e) {
-      // Que la academia este caida no puede dejar a nadie sin poder
-      // estudiar: se sigue con lo guardado en este navegador.
       return { dentro: false, sinConexion: true };
     }
   },
@@ -185,12 +140,6 @@ export const cuenta = {
   },
 };
 
-// Juntar lo de aqui con lo de alla.
-//
-// El alumno puede haber avanzado en dos sitios sin estar dentro de su
-// cuenta, asi que al entrar no se puede tirar ninguno de los dos progresos.
-// Se quedan todas las lecciones hechas de ambos lados, y de cada ejercicio
-// el texto mas largo, que es casi siempre el mas avanzado.
 export function juntarProgresos(aqui, alla) {
   if (!alla) return aqui;
   if (!aqui) return alla;
@@ -200,9 +149,6 @@ export function juntarProgresos(aqui, alla) {
     const otro = borradores[leccion] || "";
     if (typeof texto === "string" && texto.length > otro.length) borradores[leccion] = texto;
   }
-  // Las soluciones vistas se juntan tambien. Antes se perdian, y al entrar
-  // desde otro navegador se subia la lista vacia: la cuenta ganaba la marca
-  // de hacerlo todo sin mirar aunque hubiera mirado la mitad.
   const mirados = new Set([...(aqui.mirados || []), ...(alla.mirados || [])]);
   return {
     hechas: [...hechas].sort((a, b) => a - b),

@@ -1,21 +1,9 @@
 name: Publicar la academia
 
-# Compila el intérprete de Fal a WebAssembly, comprueba que todas las
-# lecciones siguen siendo ciertas, y publica.
-#
-# El intérprete no vive en este repositorio: se saca del de Fal en cada
-# publicación. Así la academia siempre enseña el lenguaje que hay ahora
-# mismo, y no queda un binario de doce megas en el historial de git.
-#
-# Para que funcione hay que activarlo una vez:
-#   Settings -> Pages -> Source -> GitHub Actions
-
 on:
   push:
     branches: [main]
   workflow_dispatch:
-  # Una vez por semana, para que un cambio en el lenguaje que rompa una
-  # lección se note aunque nadie toque este repositorio.
   schedule:
     - cron: "0 6 * * 1"
 
@@ -60,10 +48,6 @@ jobs:
           cd ..
           ls -lh web/fal.wasm web/wasm_exec.js web/trabajador.js
 
-      # Esto es lo que impide publicar un curso roto. Cada lección promete
-      # una salida concreta; aquí se ejecutan todas las soluciones con el
-      # intérprete recién compilado y se comprueba que la cumplen. Si el
-      # lenguaje cambia y una lección deja de ser cierta, no se publica.
       - name: Comprobar que las lecciones siguen siendo ciertas
         run: |
           cd fal
@@ -74,10 +58,6 @@ jobs:
       - name: El servidor de cuentas no se ha roto
         run: cd api && node pruebas.mjs
 
-      # El guion largo no se usa en este proyecto. Se coló una vez en el
-      # desplegable de categorías del foro y hubo que verlo en una captura
-      # para enterarse, así que ahora lo caza esto en lugar de la memoria de
-      # nadie. El separador de la casa es el punto medio.
       - name: Aquí no se escribe el guion largo
         run: |
           largo=$(printf '\xe2\x80\x94')
@@ -93,14 +73,6 @@ jobs:
           fi
           echo "Limpio."
 
-      # El curso es una sola página, así que el sitemap es corto. Lleva la
-      # fecha del último cambio real del contenido, que es curso.js, y no la
-      # del despliegue.
-      #
-      # El foro no sale aquí aunque también se sirva en /foro.html: su casa
-      # es foro.fal-lang.org, lo dice su etiqueta canónica, y tiene su
-      # propio sitemap allí. Pedirle a un buscador que indexe las dos sería
-      # pedirle que elija.
       - name: Hacer el sitemap
         run: |
           curso=$(git log -1 --format=%cs -- web/curso.js 2>/dev/null || date -I)
@@ -113,11 +85,6 @@ jobs:
           sed -i 's/^          //' web/sitemap.xml
           cat web/sitemap.xml
 
-      # La política de contenidos, con el hash de cada script de dentro. Se
-      # pone sobre la copia que se sube y no sobre el archivo que se edita,
-      # porque un hash escrito en el fuente se queda viejo en cuanto alguien
-      # toca una línea, y entonces la página deja de funcionar sin decir por
-      # qué.
       - name: Poner la política de contenidos
         run: cd web && node poner-politica.mjs index.html foro.html
 

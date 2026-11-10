@@ -3,8 +3,6 @@ node_modules/
 dist/
 .dev.vars
 
-# Los genera el flujo de publicación a partir del repositorio de Fal, y son
-# el intérprete entero: no tienen por qué vivir aquí dentro.
 web/fal.wasm
 web/wasm_exec.js
 web/trabajador.js
@@ -12,6 +10,4 @@ api/fal-linux
 api/wrangler.prueba.toml
 web/sitemap.xml
 
-# La carpeta que arma publicar-foro.sh para subirla a Cloudflare. Todo lo
-# que hay dentro sale de web/.
 foro-publico/

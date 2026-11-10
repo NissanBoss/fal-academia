@@ -1,14 +1,3 @@
-// El curso entero.
-//
-// Cada leccion tiene una explicacion, una tarea y la salida exacta que se
-// espera del programa del alumno. La solucion esta aqui tambien, y no es
-// solo para enseñarsela a quien se atasca: hay una prueba que coge todas
-// las soluciones, las pasa por el interprete de verdad y comprueba que dan
-// lo que la leccion dice. Un curso con un ejercicio imposible es peor que
-// no tener curso, y eso solo se descubre ejecutandolo.
-//
-// El orden importa: cada leccion solo usa palabras que ya han salido. Si
-// mueves una de sitio, comprueba que la de despues sigue teniendo sentido.
 
 export const MODULOS = [
   "Primeros pasos",
@@ -21,7 +10,6 @@ export const MODULOS = [
 ];
 
 export const LECCIONES = [
-  // --- Primeros pasos ----------------------------------------------------
   {
     modulo: 0,
     titulo: "Escribir en pantalla",
@@ -100,7 +88,6 @@ escribe edad mas 1</pre>
     pista: "La pregunta también se escribe en pantalla, así que la salida lleva las dos cosas.",
   },
 
-  // --- Decidir y repetir -------------------------------------------------
   {
     modulo: 1,
     titulo: "Decidir",
@@ -191,7 +178,6 @@ escribe "¡Ya!"</pre>
     solucion: 'cuenta es 3\nmientras cuenta es mayor que 0\n    escribe cuenta\n    cuenta es cuenta menos 1\nfin\nescribe "Despegue"',
   },
 
-  // --- Listas y diccionarios ---------------------------------------------
   {
     modulo: 2,
     titulo: "Listas",
@@ -277,7 +263,6 @@ escribe claves de edades           # [ana, luis]</pre>
     solucion: 'precios es diccionario vacio\nelemento "pan" de precios es 1\nelemento "leche" de precios es 2\nescribe elemento "pan" de precios',
   },
 
-  // --- Funciones ---------------------------------------------------------
   {
     modulo: 3,
     titulo: "Tu primera función",
@@ -353,7 +338,6 @@ escribe f con 5           # 15</pre>
     solucion: 'grita es funcion mayusculas\nescribe grita con "hola"',
   },
 
-  // --- Objetos -----------------------------------------------------------
   {
     modulo: 4,
     titulo: "Tipos",
@@ -444,7 +428,6 @@ escribe presenta de (nuevo Perro con "Toby")</pre>
     solucion: 'tipo Animal con nombre\n    funcion habla\n        devuelve "..."\n    fin\n    funcion presenta\n        devuelve nombre de mi mas " dice " mas habla de mi\n    fin\nfin\ntipo Gato hereda de Animal\n    funcion habla\n        devuelve "miau"\n    fin\nfin\nescribe presenta de (nuevo Gato con "Lola")',
   },
 
-  // --- Cuando algo falla -------------------------------------------------
   {
     modulo: 5,
     titulo: "Los errores hablan",
@@ -500,7 +483,6 @@ fin</pre>
     solucion: 'funcion edad_valida con n\n    si n es menor que 0\n        falla "edad negativa"\n    fin\n    devuelve n\nfin\nintenta\n    escribe edad_valida con (menos 5)\nsi falla\n    escribe "Eso no es una edad"\nfin',
   },
 
-  // --- Ya sabes programar ------------------------------------------------
   {
     modulo: 6,
     titulo: "Trabajar con listas de golpe",

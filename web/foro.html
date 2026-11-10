@@ -26,8 +26,6 @@
 main { padding: 44px 0 80px; min-height: 60vh; }
 .cargando { color: var(--suave); font: italic 18px var(--serif); padding: 40px 0; }
 
-/* La portada del foro: la lista a la izquierda y, al lado, lo que hay que
-   saber antes de escribir. Antes eso solo se descubría al intentarlo. */
 .rejilla { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 56px; align-items: start; }
 @media (max-width: 920px) { .rejilla { grid-template-columns: minmax(0, 1fr); gap: 40px; } }
 
@@ -47,14 +45,11 @@ main { padding: 44px 0 80px; min-height: 60vh; }
 .pestanas a:first-child { padding-left: 0; }
 .pestanas a:hover { color: var(--tinta); }
 .pestanas a[aria-current="page"] { color: var(--tinta); }
-/* Una sola raya que se desliza a la categoría elegida, como en la portada. */
 .pestanas .indicador {
   position: absolute; left: 0; bottom: 0; height: 2px; width: 0; background: var(--tierra);
   border-radius: 2px 2px 0 0; transition: transform .3s cubic-bezier(.3, .7, .2, 1), width .3s cubic-bezier(.3, .7, .2, 1);
 }
 
-/* La lista va sin caja, como el índice de una revista: una raya entre tema y
-   tema y el número de respuestas grande a la derecha. */
 .temas { list-style: none; margin: 0; padding: 0; }
 .temas li { border-bottom: 1px solid var(--borde); }
 .tema {
@@ -72,16 +67,11 @@ main { padding: 44px 0 80px; min-height: 60vh; }
   border: 1px solid var(--tierra); color: var(--tierra);
   border-radius: 4px; padding: 3px 5px 2px; vertical-align: 2px; white-space: nowrap;
 }
-/* La de moderar no compite con la de fundador: una dice quien llego pronto
-   y la otra es un cargo. */
 .chapa.apagada { border-color: var(--borde); color: var(--suave); }
 
 .paso { display: flex; margin-top: 22px; }
 .paso .alante { margin-left: auto; }
 
-/* El foro de verdad hoy está vacío, así que este es el estado que más gente
-   va a ver. Un "aquí no hay nada" a secas parece un sitio abandonado; las
-   cuatro categorías dicen qué se puede escribir y cada una lleva a hacerlo. */
 .vacio { padding: 34px 0 10px; }
 .vacio h2 { font: 400 32px/1.15 var(--serif); margin: 0 0 10px; letter-spacing: -0.015em; }
 .vacio > p { color: var(--suave); margin: 0 0 26px; max-width: 32em; font-size: 16.5px; text-wrap: pretty; }
@@ -107,7 +97,6 @@ main { padding: 44px 0 80px; min-height: 60vh; }
 .lado .regla-curso i { flex: 1; height: 8px; border-radius: 1.5px; background: var(--borde); }
 .lado .regla-curso i.hecha { background: var(--tierra); }
 
-/* Un tema abierto. */
 .volver { font-size: 14.5px; text-decoration: none; }
 .volver:hover { text-decoration: underline; }
 .hilo { max-width: 760px; }
@@ -120,8 +109,6 @@ main { padding: 44px 0 80px; min-height: 60vh; }
   border: 1px dashed var(--borde); border-radius: 10px;
 }
 
-/* Las respuestas cuelgan de una raya, como en una conversación anotada al
-   margen. La pregunta va arriba, sin raya y con la letra más grande. */
 .mensaje { position: relative; padding: 0 0 26px 26px; }
 .mensaje::before { content: ""; position: absolute; left: 4px; top: 8px; bottom: 0; width: 1px; background: var(--borde); }
 .mensaje::after {
@@ -143,8 +130,6 @@ main { padding: 44px 0 80px; min-height: 60vh; }
   margin: 0; background: var(--codigo-fondo); border: 1px solid var(--borde); border-radius: 10px;
   padding: 12px 16px; overflow-x: auto; font: 14px/1.6 var(--mono); white-space: pre;
 }
-/* El código de un mensaje se puede abrir en el playground tal cual. Quien
-   responde a una duda casi siempre acaba copiándolo para probarlo. */
 .bloque .probar {
   position: absolute; top: 8px; right: 8px; font-size: 12.5px; text-decoration: none;
   padding: 3px 9px; border-radius: 6px; background: var(--caja); border: 1px solid var(--borde);
@@ -181,8 +166,6 @@ main { padding: 44px 0 80px; min-height: 60vh; }
   color: var(--tierra); font-size: 14px; margin: 0; padding: 10px 18px;
   background: color-mix(in srgb, var(--tierra) 8%, transparent); border-top: 1px solid var(--borde);
 }
-/* Elegir categoría con las cuatro a la vista, cada una con lo que es. En un
-   desplegable había que abrirlo para enterarse de que había cuatro. */
 .elegir { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--borde); }
 @media (max-width: 760px) { .elegir { grid-template-columns: 1fr 1fr; } }
 .elegir label { padding: 12px 16px; cursor: pointer; border-right: 1px solid var(--borde); font-size: 13px; color: var(--suave); line-height: 1.4; }
@@ -200,7 +183,6 @@ main { padding: 44px 0 80px; min-height: 60vh; }
 .aviso b { display: block; font: 500 20px var(--serif); margin-bottom: 4px; }
 .aviso p { margin: 8px 0 0; color: var(--suave); font-size: 15.5px; }
 
-/* El perfil. */
 .perfil-cabeza { display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; margin: 18px 0 4px; }
 .perfil-cabeza h1 { font-size: clamp(36px, 5vw, 52px); font-weight: 500; letter-spacing: -0.02em; margin: 0; }
 .perfil-desde { color: var(--suave); font-size: 15px; margin: 0 0 30px; }
@@ -262,16 +244,9 @@ const $ = (id) => document.getElementById(id);
 const donde = $("donde");
 let yo = null;
 let categorias = [];
-// Hasta qué número de cuenta se es fundador. Lo dice el servidor al pedir
-// las categorías, para no tener el número escrito en dos sitios y que un
-// día dejen de coincidir.
 let fundadores = 0;
 
-// --- Cosas de pintar -----------------------------------------------------
 
-// Todo lo que escribe una persona entra en la página como texto. La única
-// excepción es el código pintado, y pintar() escapa cada carácter antes de
-// envolverlo en sus colores.
 function crear(etiqueta, clase, contenido) {
   const e = document.createElement(etiqueta);
   if (clase) e.className = clase;
@@ -279,9 +254,6 @@ function crear(etiqueta, clase, contenido) {
   return e;
 }
 
-// El cuerpo de un mensaje se pinta como texto, salvo los trozos entre tres
-// comillas invertidas, que salen en un bloque de código con los colores de
-// Fal y un enlace para abrirlo en el playground.
 function pintarCuerpo(caja, cuerpo) {
   const trozos = String(cuerpo).split(/```/);
   trozos.forEach((trozo, i) => {
@@ -298,8 +270,6 @@ function pintarCuerpo(caja, cuerpo) {
       caja.appendChild(bloque);
       return;
     }
-    // Los saltos de línea pegados a un bloque de código sobran: el bloque ya
-    // trae su separación, y dejarlos abría un hueco de un párrafo a cada lado.
     let texto = trozo;
     if (i > 0) texto = texto.replace(/^\n+/, "");
     if (i < trozos.length - 1) texto = texto.replace(/\n+$/, "");
@@ -336,8 +306,6 @@ async function pedir(camino, opciones) {
   return cuerpo;
 }
 
-// La chapa de fundador va al lado del nombre en todas partes: enterarse de
-// que alguien estuvo desde el principio no debería costar otra página.
 function chapaFundador(autorId) {
   if (!fundadores || !(autorId > 0 && autorId <= fundadores)) return null;
   const chapa = crear("span", "chapa", "beta");
@@ -361,7 +329,6 @@ function moverIndicador(lista) {
   raya.style.transform = `translateX(${elegida.offsetLeft + izquierda}px)`;
 }
 
-// --- La portada del foro -------------------------------------------------
 
 function columnaDeAlLado() {
   const lado = crear("aside", "lado");
@@ -388,8 +355,6 @@ function columnaDeAlLado() {
   codigo.appendChild(ejemplo);
   lado.appendChild(codigo);
 
-  // El permiso se pide aparte para no retrasar la lista: el lado se rellena
-  // cuando llega.
   pedir("/api/foro/puedo").catch(() => ({ puede: false })).then((p) => {
     const hechas = !yo ? 0 : p.puede ? 5 : 5 - (p.faltan || 5);
     regla.querySelectorAll("i").forEach((i, n) => i.classList.toggle("hecha", n < hechas));
@@ -519,7 +484,6 @@ async function pintarLista(categoria, pagina) {
   }
   caja.appendChild(lista);
 
-  // Anterior y siguiente, y solo cuando hay a dónde ir.
   if (pagina > 0 || datos.hayMas) {
     const paso = crear("div", "paso");
     const base = "#/" + (categoria ? "c/" + categoria : "");
@@ -537,15 +501,12 @@ async function pintarLista(categoria, pagina) {
   }
 }
 
-// --- Un tema -------------------------------------------------------------
 
 async function pintarTema(id) {
   donde.innerHTML = "";
   let datos;
   let permiso;
   try {
-    // Los dos a la vez: el permiso hace falta para pintar los mensajes, no
-    // solo para saber si va la caja de responder al final.
     [datos, permiso] = await Promise.all([
       pedir("/api/foro/tema/" + id),
       pedir("/api/foro/puedo").catch(() => ({ puede: false, motivo: "" })),
@@ -584,8 +545,6 @@ async function pintarTema(id) {
   donde.appendChild(hilo);
 }
 
-// La fila de moderar, que solo ve quien modera. Va arriba y con raya de
-// puntos: son botones para cuando algo va mal, no para usarlos cada día.
 function botonesDeModerar(tema) {
   const fila = crear("div", "moderar");
   fila.appendChild(crear("span", null, "Moderar:"));
@@ -639,10 +598,6 @@ function pintarMensaje(m, esPrimero, tema, modera) {
   caja.appendChild(cuerpo);
 
   const abajo = crear("div", "abajo");
-  // La pregunta no se marca como útil: lo que se marca son las respuestas.
-  // Quien no ha entrado, y el autor sobre lo suyo, ven el número pero no un
-  // botón: enseñar algo que se puede pulsar para llevarse un no es peor que
-  // no enseñarlo.
   if (!esPrimero) {
     const puedeMarcar = yo && yo.usuario !== m.autor;
     if (puedeMarcar) {
@@ -672,9 +627,6 @@ function pintarMensaje(m, esPrimero, tema, modera) {
     };
     abajo.appendChild(borrar);
   }
-  // Avisar de algo no pide cuenta: quien ve un insulto o algo ilegal no
-  // tiene por qué tener una. Va por correo, con el enlace ya puesto, porque
-  // detrás no hay más que una persona leyendo ese buzón.
   if (!esMio) {
     const avisar = crear("a", "avisar", "Avisar");
     const donde = "https://foro.fal-lang.org/#/t/" + tema + " (mensaje " + m.id + ")";
@@ -687,8 +639,6 @@ function pintarMensaje(m, esPrimero, tema, modera) {
   return caja;
 }
 
-// Un textarea con su cuenta de letras, que se pone en rojo al acercarse al
-// tope, y Ctrl+Intro para mandar.
 function areaDeTexto(textoAyuda, alMandar) {
   const area = document.createElement("textarea");
   area.placeholder = textoAyuda;
@@ -710,8 +660,6 @@ function ponerError(caja, mensaje) {
   caja.insertBefore(error, caja.querySelector(".abajo"));
 }
 
-// La caja de responder solo aparece si se puede responder. Si no, dice por
-// qué y qué falta, en vez de dejar escribir para rechazarlo al final.
 function cajaDeResponder(tema, permiso) {
   if (!permiso.puede) return cajaDePermiso(permiso);
 
@@ -767,7 +715,6 @@ function cajaDePermiso(permiso) {
   return caja;
 }
 
-// --- Escribir un tema ----------------------------------------------------
 
 async function pintarNuevo(categoriaElegida) {
   donde.innerHTML = "";
@@ -840,7 +787,6 @@ async function pintarNuevo(categoriaElegida) {
   titulo.focus();
 }
 
-// --- Un perfil -----------------------------------------------------------
 
 async function pintarPerfil(nombre) {
   donde.innerHTML = "";
@@ -928,7 +874,6 @@ async function pintarPerfil(nombre) {
   donde.appendChild(hilo);
 }
 
-// --- La cuenta y el reparto ---------------------------------------------
 
 function pintarCuenta() {
   const zona = $("zonaCuenta");
@@ -953,8 +898,6 @@ function repartir() {
   if (ruta.startsWith("/t/")) return pintarTema(parseInt(ruta.slice(3), 10));
   if (ruta.startsWith("/u/")) return pintarPerfil(decodeURIComponent(ruta.slice(3)));
   if (ruta === "/nuevo" || ruta.startsWith("/nuevo/")) return pintarNuevo(ruta.slice(7));
-  // Una categoría puede llevar número de página detrás: /c/dudas/2. Sin
-  // categoría el número va solo: /p/2.
   if (ruta.startsWith("/c/")) {
     const partes = ruta.slice(3).split("/");
     return pintarLista(partes[0], parseInt(partes[1], 10) || 0);

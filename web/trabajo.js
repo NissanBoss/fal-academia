@@ -1,34 +1,4 @@
-// La prueba de trabajo, por el lado del navegador.
-//
-// Antes de dejarte crear una cuenta, el servidor pide que tu maquina haya
-// gastado un poco de esfuerzo. La idea no es adivinar si eres una persona,
-// que es lo que intentan los captchas de letras torcidas y lo que un
-// programa hace mejor que tu: la idea es que crear una cuenta cueste algo
-// de verdad. A ti te cuesta un segundo y no te enteras. A quien quiera
-// crear diez mil le cuesta tres horas de ordenador, y ese es todo el
-// truco.
-//
-// No hay imagenes que descifrar, asi que funciona igual si no ves, si usas
-// lector de pantalla o si estas en un movil viejo. Y no se carga nada de
-// ningun servidor ajeno, que es lo que pasaria con un captcha de los que
-// se alquilan.
-//
-// El trabajo consiste en encontrar un numero que, pegado a la semilla que
-// manda el servidor, de un resumen SHA-256 que empiece por unos cuantos
-// ceros. No hay forma de acertarlo pensando: solo se puede probar. Y
-// comprobar que el numero vale es un solo resumen, o sea que al servidor no
-// le cuesta nada.
 
-// SHA-256 escrito aqui a mano, y no con crypto.subtle, por una razon de
-// velocidad que no se ve venir: el de la plataforma es asincrono y cada
-// llamada arrastra su promesa, asi que doscientas mil llamadas tardan
-// segundos en puro papeleo. Este es sincrono y hace las doscientas mil en
-// menos de uno.
-//
-// Solo sirve para mensajes de menos de 56 bytes, que caben en un unico
-// bloque. Es todo lo que hace falta aqui, y quitar el bucle de bloques deja
-// la funcion en la mitad. Si algun dia se le pasa algo mas largo, avisa en
-// vez de devolver un resumen equivocado.
 const K = new Uint32Array([
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
   0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -48,8 +18,6 @@ const w = new Uint32Array(64);
 function resumenDeUnBloque(bytes, largo) {
   if (largo > 55) throw new Error("este resumen solo vale para mensajes cortos");
 
-  // El relleno de SHA-256: un uno, ceros hasta el final, y el largo en bits
-  // en los ultimos ocho bytes.
   for (let i = 0; i < 16; i++) w[i] = 0;
   for (let i = 0; i < largo; i++) w[i >> 2] |= bytes[i] << (24 - (i % 4) * 8);
   w[largo >> 2] |= 0x80 << (24 - (largo % 4) * 8);
@@ -78,12 +46,9 @@ function resumenDeUnBloque(bytes, largo) {
     d = c; c = b; b = a; a = (t1 + t2) | 0;
   }
 
-  // Solo hacen falta las dos primeras palabras: los ceros que se buscan
-  // estan al principio y nunca se piden mas de sesenta y cuatro bits.
   return [(h0 + a) | 0, (h1 + b) | 0];
 }
 
-// Cuantos ceros seguidos trae el resumen por delante, contando en bits.
 function cerosDelante(par) {
   const alto = par[0] >>> 0;
   if (alto !== 0) return Math.clz32(alto);
@@ -91,24 +56,6 @@ function cerosDelante(par) {
   return 32 + (bajo === 0 ? 32 : Math.clz32(bajo));
 }
 
-// Busca el numero que hace falta. Va de un tiron y sin soltar el turno,
-// porque esto no corre en la pagina: corre dentro de obrero.js, en su
-// propio hilo, donde bloquear no molesta a nadie.
-//
-// Se intento primero soltando el turno cada pocos miles de intentos con un
-// setTimeout, y salio mucho peor: con la pestaña en segundo plano el
-// navegador estrangula los temporizadores a un segundo cada uno, y una
-// busqueda de menos de un segundo pasaba a tardar doce. La medida lo
-// enseño de golpe.
-//
-// Devuelve tambien cuantos intentos costo. No es un adorno: es lo que
-// permite medir si la dificultad esta bien puesta en una maquina de
-// verdad, que es como se decidio la que hay.
-//
-// Si le pasan una funcion, la llama de vez en cuando con los intentos que
-// lleva, para poder enseñarlo por pantalla. No se puede dar un porcentaje:
-// encontrar el numero es cuestion de suerte y puede pasar en el intento mil
-// o en el dos millones.
 export function resolver(semilla, ceros, avisar) {
   const base = new TextEncoder().encode(semilla + ":");
   const bytes = new Uint8Array(64);

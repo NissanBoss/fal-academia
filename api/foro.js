@@ -1,14 +1,3 @@
-// El foro.
-//
-// Leerlo no pide cuenta. Escribir sí, y además haber terminado el primer
-// módulo del curso, que es el filtro contra el spam: a una persona no le
-// cuesta nada porque iba a hacerlo igual, y a un programa le cuesta aprender
-// a programar en español.
-//
-// No hay votos ni puntuaciones. Solo un «esto me ayudó» en las respuestas,
-// que sirve para encontrar la buena dentro de un hilo largo y para ganar una
-// marca. Un foro pequeño con votos negativos se vuelve desagradable antes de
-// tener gente suficiente para que sirvan de algo.
 
 import {
   marcasDelCurso, apuntarMarcas, marcasDe, puedeEscribir, PARA_ESCRIBIR,
@@ -54,9 +43,6 @@ async function categorias(entorno) {
   return json({ categorias: filas.results || [], fundadores: FUNDADORES });
 }
 
-// La lista de temas. Trae ya el nombre de quien lo abrió para no tener que
-// pedir un perfil por fila, que con el tope diario de lecturas del plan
-// gratuito es la diferencia entre una consulta y veinticinco.
 async function listarTemas(url, entorno) {
   const categoria = url.searchParams.get("categoria") || "";
   const pagina = Math.max(0, parseInt(url.searchParams.get("pagina") || "0", 10) || 0);
@@ -101,8 +87,6 @@ async function verTema(ruta, entorno) {
     "WHERE m.tema = ? ORDER BY m.creado LIMIT 400"
   ).bind(id).all();
 
-  // Un mensaje borrado deja su hueco, para que no queden respuestas
-  // colgando de algo que ya no está.
   const mensajes = (filas.results || []).map((m) =>
     m.oculto
       ? { id: m.id, borrado: true, creado: m.creado }
@@ -134,18 +118,10 @@ async function puedoEscribir(entorno, quienEs) {
     puede: r.puede,
     motivo: r.motivo || "",
     faltan: r.faltan || 0,
-    // Para que la página sepa si enseñar los botones de moderar. Decirlo
-    // aquí no da permiso: cada cosa se vuelve a comprobar al hacerla, así
-    // que decir que sí desde el navegador no sirve de nada.
     modera: await esModerador(entorno, quienEs),
   });
 }
 
-// Cerrar un tema y volver a abrirlo. Solo modera quien modera.
-//
-// Un tema cerrado se sigue leyendo entero; lo único que no admite es
-// respuestas nuevas. Es lo que hace falta cuando un hilo se ha ido de las
-// manos y borrarlo seria tirar lo que si servia.
 async function cerrarTema(peticion, entorno, quienEs) {
   if (!quienEs) return json({ error: "entra en tu cuenta" }, 401);
   if (!(await esModerador(entorno, quienEs))) return json({ error: "eso no lo puedes hacer" }, 403);
@@ -163,9 +139,6 @@ async function cerrarTema(peticion, entorno, quienEs) {
   return json({ cerrado: !!cerrado });
 }
 
-// Un tope de tiempo entre mensajes. No es contra las personas: es contra la
-// cuenta que consigue pasar el filtro del curso y luego suelta cincuenta
-// mensajes seguidos.
 async function vaDemasiadoRapido(entorno, alumno) {
   const ultimo = await entorno.DB.prepare(
     "SELECT creado FROM mensajes WHERE autor = ? ORDER BY creado DESC LIMIT 1"
@@ -174,13 +147,6 @@ async function vaDemasiadoRapido(entorno, alumno) {
   return Date.now() - ultimo.creado < SEGUNDOS_ENTRE_MENSAJES * 1000;
 }
 
-// Un tope por dia, mas bajo el primer dia de la cuenta.
-//
-// El filtro del primer modulo no para a un programa: el progreso lo manda el
-// navegador y el servidor no puede comprobar que las lecciones se hicieran
-// de verdad. Sin esto, cada cuenta que pasa el filtro podia soltar un
-// mensaje cada veinte segundos, todo el dia. Los mensajes borrados cuentan
-// igual, para que borrar no devuelva el cupo.
 async function haEscritoDemasiado(entorno, alumno) {
   const ahora = Date.now();
   const fila = await entorno.DB.prepare(
@@ -195,15 +161,6 @@ const PASA_DEL_TOPE = "Has escrito mucho por hoy. Mañana puedes seguir.";
 
 export function limpiar(texto, tope) {
   if (typeof texto !== "string") return "";
-  // Se recorre letra a letra y se comparan numeros, sin escribir ningun
-  // caracter raro dentro de este archivo. Meter los propios caracteres de
-  // control en una expresion regular deja el fuente lleno de bytes que
-  // ninguna herramienta sabe enseñar, y git pasa a tratarlo como binario.
-  //
-  // Fuera se quedan los de control, menos el salto de linea y el tabulador,
-  // que si hacen falta para pegar un trozo de programa. Y fuera las marcas
-  // de direccion del texto, que sirven para escribir algo al reves y
-  // hacerse pasar por otro.
   let salida = "";
   for (const letra of texto) {
     const n = letra.codePointAt(0);
@@ -288,8 +245,6 @@ async function responder(peticion, entorno, quienEs) {
   return json({ mensaje: puesto.meta.last_row_id });
 }
 
-// Las marcas se repasan al escribir, que es cuando alguien va a mirar su
-// propio perfil, y de paso se le da la de haber hablado por primera vez.
 async function trasEscribir(entorno, alumno, progreso) {
   const claves = marcasDelCurso(alumno, progreso);
   claves.push("primera_palabra");
@@ -306,7 +261,6 @@ async function marcarAyuda(peticion, entorno, quienEs) {
     "SELECT id, autor FROM mensajes WHERE id = ? AND oculto = 0"
   ).bind(mensaje).first();
   if (!fila) return json({ error: "ese mensaje no existe" }, 404);
-  // Marcarse a uno mismo no dice nada de nadie.
   if (fila.autor === quienEs.id) return json({ error: "eso es tuyo" }, 400);
 
   const ya = await entorno.DB.prepare(
@@ -330,9 +284,6 @@ async function esModerador(entorno, quienEs) {
   return !!fila;
 }
 
-// Borrar. El autor puede quitar lo suyo y quien modera puede quitar
-// cualquier cosa. Nada se borra de verdad: se marca, para que el hilo siga
-// teniendo sentido y para poder deshacerlo si alguien se equivoca.
 async function ocultar(peticion, entorno, quienEs) {
   if (!quienEs) return json({ error: "entra en tu cuenta" }, 401);
   const cuerpo = await peticion.json().catch(() => null);
@@ -360,25 +311,12 @@ async function ocultar(peticion, entorno, quienEs) {
   return json({ error: "no dices qué borrar" }, 400);
 }
 
-// Una línea suelta de un mensaje, para el índice del perfil. Se quitan las
-// comillas que abren un bloque de código y se juntan los saltos de línea:
-// en una sola línea no significan nada y el resumen acaba siendo un montón
-// de símbolos sueltos en vez de una frase que se pueda leer.
 export function resumir(cuerpo) {
   const plano = cuerpo.split("```").join(" ").replace(/\s+/g, " ").trim();
   return plano.length > 180 ? plano.slice(0, 180) + "…" : plano;
 }
 
-// El perfil de alguien: sus marcas y por dónde ha andado.
-//
-// No enseña el progreso del curso lección a lección. Las marcas dicen lo que
-// ha conseguido, que es lo que la persona quiere enseñar; el detalle de en
-// qué ejercicio se atascó es asunto suyo.
 async function perfil(ruta, entorno) {
-  // decodeURIComponent revienta con un porcentaje suelto, y ese fallo subia
-  // hasta el manejador de arriba y salia como un 500. Un 500 en un sitio
-  // donde deberia haber un 404 le dice a quien busca por donde entrar que
-  // ahi hay algo que no se esperaba lo que le acaban de mandar.
   let nombre;
   try {
     nombre = decodeURIComponent(ruta.slice("/api/foro/perfil/".length));
@@ -398,9 +336,6 @@ async function perfil(ruta, entorno) {
     "WHERE t.autor = ? AND t.oculto = 0 ORDER BY t.creado DESC LIMIT 30"
   ).bind(quien.id).all();
 
-  // Respuestas de verdad, no el mensaje con el que se abre un tema. Ese ya
-  // sale más arriba bajo «ha abierto», y contarlo dos veces hace que un
-  // perfil parezca el doble de activo de lo que es.
   const respuestas = await entorno.DB.prepare(
     "SELECT m.id, m.cuerpo, m.creado, m.ayudas, t.id AS tema, t.titulo " +
     "FROM mensajes m JOIN temas t ON t.id = m.tema " +
@@ -415,9 +350,6 @@ async function perfil(ruta, entorno) {
     "       (SELECT COALESCE(SUM(ayudas), 0) FROM mensajes WHERE autor = ? AND oculto = 0) AS ayudas"
   ).bind(quien.id, quien.id, quien.id).first();
 
-  // Quién modera se dice en su perfil y a la vista de todos. Es lo normal en
-  // un foro: quien puede quitar lo que escribes debería ser alguien con
-  // nombre, no una mano anónima, y así se sabe a quién preguntar.
   const modera = await entorno.DB.prepare("SELECT alumno FROM moderadores WHERE alumno = ?")
     .bind(quien.id).first();
 
@@ -428,7 +360,6 @@ async function perfil(ruta, entorno) {
     modera: !!modera,
     marcas: await marcasDe(entorno, quien.id),
     temas: temas.results || [],
-    // Las respuestas se recortan: el perfil es un índice, no una relectura.
     respuestas: (respuestas.results || []).map((r) => ({ ...r, cuerpo: resumir(r.cuerpo) })),
     cuentas: cuentas || { temas: 0, mensajes: 0, ayudas: 0 },
   });

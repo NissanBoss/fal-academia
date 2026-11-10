@@ -22,8 +22,6 @@
 <meta property="og:description" content="32 lecciones en español, con ejercicios que se corrigen solos. Sin instalar nada.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://aprende.fal-lang.org/">
-<!-- Solo hechos. Sin valoraciones ni número de alumnos, que es por donde
-     estas fichas se convierten en mentiras y acaban penalizadas. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -50,9 +48,6 @@ nav.sitio .fila { max-width: none; padding: 0 24px; }
 
 .disposicion { display: grid; grid-template-columns: 290px minmax(0, 1fr); min-height: calc(100vh - var(--alto-barra)); }
 
-/* El índice. Arriba, cuánto llevas: un número grande y una regla con una
-   marca por lección, agrupadas por módulo. La barra de antes decía lo mismo
-   en 84 píxeles y no dejaba ver que el curso tiene partes. */
 aside {
   border-right: 1px solid var(--borde); padding: 26px 0 40px;
   position: sticky; top: var(--alto-barra); align-self: start;
@@ -86,7 +81,6 @@ aside {
 .modulo li .n { flex: none; width: 18px; text-align: right; font: 12px var(--mono); color: var(--suave); }
 .modulo li a.hecha .n { color: var(--tierra); font-weight: 600; }
 
-/* La lección, a lo ancho de un libro y no de la pantalla. */
 main { padding: 40px 48px 70px; min-width: 0; }
 .ancho { max-width: 880px; margin: 0 auto; }
 .donde { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 6px; font-size: 14.5px; color: var(--suave); }
@@ -99,8 +93,6 @@ main { padding: 40px 48px 70px; min-width: 0; }
   padding: 14px 18px; overflow-x: auto; font-size: 14.5px; line-height: 1.6; margin: 4px 0 20px;
   max-width: 40em;
 }
-/* Sin esto "es mayor que" se partía entre dos líneas y parecían dos trozos
-   de código distintos. */
 .cuerpo :not(pre) > code, .tarea code { white-space: nowrap; }
 .tarea {
   position: relative; margin: 30px 0 18px; padding: 16px 20px 16px 22px; max-width: 40em;
@@ -110,7 +102,6 @@ main { padding: 40px 48px 70px; min-width: 0; }
 .tarea b { display: block; font: italic 400 18px var(--serif); color: var(--tierra); margin-bottom: 2px; }
 .tarea p { margin: 0; font-size: 16.5px; text-wrap: pretty; }
 
-/* El taller, con la misma hoja que el cuaderno de la portada. */
 .hoja { background: var(--caja); border: 1px solid var(--borde); border-radius: 14px; box-shadow: var(--sombra); overflow: hidden; }
 .mesa { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
 @media (max-width: 1060px) { .mesa { grid-template-columns: 1fr; } }
@@ -141,10 +132,6 @@ main { padding: 40px 48px 70px; min-width: 0; }
 .barra .estado { font-size: 13px; color: var(--suave); }
 .barra .lejos { margin-left: auto; font-size: 14px; }
 
-/* La solución no pisa lo que llevas escrito: se enseña al lado, y si la
-   quieres en el editor es un botón más. Antes sustituía tu intento sin
-   avisar, y lo que habías escrito se perdía justo cuando más útil era
-   compararlo. */
 .solucion { border-top: 1px solid var(--borde); padding: 14px 18px 16px; background: var(--codigo-fondo); }
 .solucion .titulo { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; font: italic 16px var(--serif); color: var(--suave); }
 .solucion .titulo .boton { margin-left: auto; }
@@ -174,9 +161,6 @@ main { padding: 40px 48px 70px; min-width: 0; }
 }
 .sello svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 
-/* Cuando la salida no coincide, las dos una al lado de la otra y la primera
-   línea distinta marcada. "Compara lo que sale con lo que pide" obligaba a
-   hacerlo de memoria, y casi siempre la diferencia era un espacio. */
 .comparar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
 @media (max-width: 620px) { .comparar { grid-template-columns: 1fr; } }
 .comparar .versalitas { display: block; margin-bottom: 4px; }
@@ -198,22 +182,16 @@ main { padding: 40px 48px 70px; min-width: 0; }
 .paso span { font: 500 18px/1.3 var(--serif); }
 .paso.alante { text-align: right; grid-column: 2; }
 
-/* En el móvil el índice se esconde detrás de un botón. El de antes
-   desaparecía sin más y no había forma de saltar a otra lección. */
 .abrir-indice { display: none; }
 @media (max-width: 900px) {
   .disposicion { grid-template-columns: 1fr; }
   aside {
     position: fixed; z-index: 40; top: var(--alto-barra); left: 0; bottom: 0; width: min(320px, 86vw);
     max-height: none; background: var(--papel); box-shadow: var(--sombra);
-    /* Con el start de arriba el cajón medía lo que su contenido y, como no
-       cabía, el navegador lo subía hasta tapar la barra. */
     align-self: stretch;
     transform: translateX(-102%); visibility: hidden;
     transition: transform .3s cubic-bezier(.3, .7, .2, 1), visibility 0s .3s;
   }
-  /* Escondido de verdad y no solo fuera de la pantalla: asomaba la sombra
-     por el borde y el tabulador se metía en enlaces que no se veían. */
   aside.abierto { transform: none; visibility: visible; transition-delay: 0s; }
   .velo { position: fixed; inset: var(--alto-barra) 0 0 0; z-index: 35; background: rgba(20, 18, 14, .35); }
   main { padding: 20px 16px 60px; }
@@ -226,12 +204,9 @@ main { padding: 40px 48px 70px; min-width: 0; }
   .paso.alante { grid-column: auto; }
 }
 
-/* Los diálogos de la cuenta. */
 dialog .dentro { padding: 26px 26px 24px; }
 dialog h2 { margin: 0 0 6px; font-size: 26px; font-weight: 500; }
 dialog p.sub { margin: 0 0 18px; color: var(--suave); font-size: 15px; text-wrap: pretty; }
-/* El trato, dicho antes de pedir nada. Es lo que separa esto de cualquier
-   otro registro, así que va arriba y no en letra pequeña al final. */
 .trato { border-left: 3px solid var(--tierra); padding: 2px 0 2px 14px; margin: 0 0 18px; font-size: 14px; }
 .trato b { display: block; font: italic 500 17px var(--serif); }
 .trato span { color: var(--suave); }
@@ -247,17 +222,12 @@ dialog input.mal { border-color: var(--tierra); }
 .nota { font-size: 13px; color: var(--suave); margin: 5px 0 0; min-height: 1.35em; }
 .nota.mal { color: var(--tierra); }
 .nota.bien { color: var(--verde); }
-/* La barra de la contraseña mide longitud, que es lo que de verdad cuesta
-   romper. No pide mayúsculas ni símbolos: eso empuja a la gente hacia
-   contraseñas cortas y retorcidas que se adivinan antes que una frase. */
 .fuerza { display: flex; gap: 3px; margin-top: 7px; }
 .fuerza i { flex: 1; height: 3px; border-radius: 2px; background: var(--borde); transition: background .2s; }
 .fuerza.f1 i:nth-child(1) { background: var(--tierra); }
 .fuerza.f2 i:nth-child(-n+2) { background: #c98a2e; }
 .fuerza.f3 i:nth-child(-n+3) { background: var(--verde); }
 .fuerza.f4 i { background: var(--verde); }
-/* Borrar la cuenta. La política de privacidad prometía este botón y no
-   existía: la función estaba en cuenta.js sin que nadie la llamara. */
 .peligro { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--borde); }
 .peligro h3 { margin: 0 0 4px; font: 600 15px var(--sans); }
 .peligro p { margin: 0; font-size: 14px; color: var(--suave); text-wrap: pretty; }
@@ -502,24 +472,16 @@ const editor = montarEditor($("editor"), alEscribir);
 const $programa = editor.area;
 
 const AYUDA_TECLAS = '<span class="teclas"><kbd>Ctrl</kbd> + <kbd>Intro</kbd> también comprueba</span>';
-// Las lecciones donde se acaba un módulo, para poder decirlo al acertarlas.
 const ULTIMA_DEL_MODULO = new Set(MODULOS.map((_, m) =>
   LECCIONES.reduce((ultima, l, i) => l.modulo === m ? i : ultima, -1)));
 
 let actual = 0;
 let hechas = new Set();
 let borradores = {};
-// En qué lecciones se pulsó «ver la solución». Sirve para la marca de
-// haberlo sacado por tu cuenta, y por eso se apunta aquí y no se pregunta.
 let mirados = new Set();
 let dentro = false;
 let usuarioDentro = "";
 
-// --- Guardar el progreso -------------------------------------------------
-//
-// Siempre en este navegador, y además en la cuenta si hay una. El orden
-// importa: si el servidor está caído o el alumno no tiene cuenta, seguir
-// estudiando tiene que funcionar igual.
 
 const LLAVE = "fal_academia";
 
@@ -545,18 +507,12 @@ function guardar() {
   } catch (e) {}
   pintarAvance();
   if (!dentro) return;
-  // Al servidor se sube con calma. Guardar en cada tecla sería una petición
-  // por letra escrita, y el plan gratuito tiene un tope diario de escrituras
-  // que no hay por qué gastar en eso.
   clearTimeout(esperando);
   esperando = setTimeout(() => {
     cuenta.subirProgreso(comoObjeto()).catch(() => {});
   }, 2500);
 }
 
-// Al salir de la cuenta o borrarla, lo de este navegador se va con ella.
-// Se quedaba, y en un ordenador compartido el siguiente que entraba se
-// llevaba a su cuenta el progreso y el código del anterior al juntarlos.
 function olvidarEsteNavegador() {
   clearTimeout(esperando);
   try { localStorage.removeItem(LLAVE); } catch (e) {}
@@ -568,7 +524,6 @@ function olvidarEsteNavegador() {
   pintarLeccion();
 }
 
-// --- Pintar --------------------------------------------------------------
 
 function pintarIndice() {
   const caja = $("modulos");
@@ -595,8 +550,6 @@ function pintarIndice() {
       if (i === actual) a.setAttribute("aria-current", "page");
       const n = document.createElement("span");
       n.className = "n";
-      // La marca de hecha ocupa el sitio del número y no va al final: así
-      // la columna de la izquierda dice de un vistazo por dónde vas.
       n.textContent = hechas.has(i) ? "✓" : String(i + 1);
       a.appendChild(n);
       a.appendChild(document.createTextNode(LECCIONES[i].titulo));
@@ -648,8 +601,6 @@ function pintarLeccion() {
   $("lecModulo").textContent = MODULOS[l.modulo];
   $("lecNumero").textContent = "Lección " + (actual + 1) + " de " + LECCIONES.length;
   $("lecCuerpo").innerHTML = l.cuerpo;
-  // Los ejemplos del curso vienen en texto plano y se pintan aquí, con los
-  // mismos colores que el editor de debajo.
   $("lecCuerpo").querySelectorAll("pre").forEach(pre => { pre.innerHTML = pintar(pre.textContent); });
   $("lecTarea").innerHTML = l.tarea;
 
@@ -683,7 +634,6 @@ function ir(i) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// El índice del móvil.
 function cerrarIndice() {
   $("indice").classList.remove("abierto");
   $("velo").hidden = true;
@@ -698,7 +648,6 @@ $("abrirIndice").onclick = () => {
 $("velo").onclick = cerrarIndice;
 addEventListener("keydown", (ev) => { if (ev.key === "Escape") cerrarIndice(); });
 
-// --- El intérprete -------------------------------------------------------
 
 let trabajador = null;
 let corriendo = false;
@@ -718,9 +667,6 @@ function arrancarInterprete() {
     if (!corriendo) return;
     if (m.tipo === "salida") {
       recogido += m.texto;
-      // Un bucle sin fin que escribe en cada vuelta mandaba millones de
-      // mensajes y la pestaña entera se caía antes de poder pulsar Parar.
-      // Ningún ejercicio del curso escribe ni la centésima parte de esto.
       if (recogido.length > TOPE_SALIDA) {
         recogido = recogido.slice(0, TOPE_SALIDA);
         parar("Ha escrito demasiado y lo he cortado.",
@@ -751,10 +697,6 @@ function botonEn(modo) {
   $("estado").innerHTML = modo === "parar" ? "Ejecutando…" : AYUDA_TECLAS;
 }
 
-// Un bucle que no acaba no se puede parar desde dentro. Se tira el hilo
-// entero y se levanta otro. La lección de «mientras» avisa de que esto
-// pasa, y en la versión de antes la página se quedaba diciendo
-// «Ejecutando…» para siempre.
 function parar(titulo, detalle) {
   trabajador.terminate();
   corriendo = false;
@@ -779,9 +721,6 @@ function comprobar() {
   const l = LECCIONES[actual];
   const programa = $programa.value;
 
-  // Las palabras obligatorias se miran antes de ejecutar. Si el ejercicio
-  // pide un bucle y el alumno escribe tres veces la misma línea, la salida
-  // sería correcta y no habría aprendido lo que la lección enseña.
   for (const palabra of l.debeUsar || []) {
     if (!new RegExp("\\b" + palabra + "\\b").test(programa)) {
       ponerVeredicto("mal", 'Te falta usar «' + palabra + '».',
@@ -825,8 +764,6 @@ function ponerVeredicto(tipo, titulo, detalle, extra) {
   $veredicto.appendChild(caja);
 }
 
-// Las dos salidas, línea a línea, con la primera distinta marcada. Todo va
-// con textContent: lo que escribe un programa puede llevar cualquier cosa.
 function comparacion(sale, espera) {
   const a = String(sale).replace(/\n+$/, "").split("\n");
   const b = String(espera).split("\n");
@@ -908,7 +845,6 @@ function terminar(error, dibujo) {
   }
 }
 
-// --- La solución ---------------------------------------------------------
 
 $("pista").onclick = () => {
   const l = LECCIONES[actual];
@@ -928,7 +864,6 @@ $("usarSolucion").onclick = () => {
   $programa.focus();
 };
 
-// --- La cuenta -----------------------------------------------------------
 
 function pintarCuenta(usuario) {
   dentro = !!usuario;
@@ -967,8 +902,6 @@ function ponerModo() {
   $("notaUsuario").textContent = "";
   $("notaClave").textContent = "";
 
-  // El pie cambia de sentido según el modo, y en el de entrar es donde vive
-  // la salida para quien ha olvidado la contraseña.
   const pie = $("dlgPie");
   pie.innerHTML = "";
   if (modoRegistro) {
@@ -991,8 +924,6 @@ function comoEnlace(texto, alPulsar) {
   return b;
 }
 
-// Enseñar la contraseña. Escribir a ciegas una contraseña larga es la razón
-// por la que la gente pone contraseñas cortas.
 function ponerOjo(boton, campo) {
   $(boton).onclick = () => {
     const c = $(campo);
@@ -1005,7 +936,6 @@ function ponerOjo(boton, campo) {
 ponerOjo("verClave", "dlgClave");
 ponerOjo("verClaveNueva", "olvClave");
 
-// La medida es la longitud, no los símbolos raros.
 function pintarFuerza(clave, elemento, nota) {
   const n = clave.length;
   const nivel = n === 0 ? 0 : n < 8 ? 1 : n < 12 ? 2 : n < 16 ? 3 : 4;
@@ -1022,7 +952,6 @@ function pintarFuerza(clave, elemento, nota) {
   nota.className = "nota" + (nivel === 1 ? " mal" : nivel >= 3 ? " bien" : "");
 }
 
-// Decir lo que falla mientras se escribe, y no después de pulsar el botón.
 function comprobarCampos() {
   const usuario = $("dlgUsuario").value.trim();
   const nota = $("notaUsuario");
@@ -1056,8 +985,6 @@ $("dlgClave").addEventListener("input", comprobarCampos);
 $("olvClave").addEventListener("input", () =>
   pintarFuerza($("olvClave").value, $("fuerzaNueva"), $("notaClaveNueva")));
 
-// El código de rescate se escribe en mayúsculas y con guiones cada cinco,
-// así que se va colocando solo mientras lo teclean o lo pegan.
 $("olvCodigo").addEventListener("input", (ev) => {
   const limpio = ev.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20);
   ev.target.value = (limpio.match(/.{1,5}/g) || []).join("-");
@@ -1110,9 +1037,6 @@ $("formCuenta").addEventListener("submit", async (ev) => {
   boton.disabled = true;
   boton.textContent = "Un momento…";
 
-  // La prueba de trabajo tarda un par de segundos. Enseñar los intentos que
-  // lleva es la diferencia entre una página que está haciendo algo y una
-  // que parece colgada.
   const avisar = (van) => {
     boton.textContent = "Comprobando… " + Math.round(van / 1000) + " mil intentos";
   };
@@ -1130,8 +1054,6 @@ $("formCuenta").addEventListener("submit", async (ev) => {
   } catch (fallo) {
     error.textContent = fallo.message;
     error.hidden = false;
-    // El nombre cogido es el fallo más común al registrarse, y la salida
-    // buena casi siempre es entrar en vez de inventarse otro nombre.
     if (fallo.estado === 409) {
       error.append(" ");
       error.appendChild(comoEnlace("¿Es tuya? Entra.", () => {
@@ -1145,9 +1067,6 @@ $("formCuenta").addEventListener("submit", async (ev) => {
   }
 });
 
-// El código de rescate solo se enseña una vez, así que la pantalla no deja
-// seguir hasta que se ha copiado o descargado. Un botón de «vale» que se
-// pulsa sin leer es exactamente como se pierde una cuenta.
 function enseñarRescate(codigo) {
   $("textoRescate").textContent = codigo;
   $("rescateCopiar").textContent = "Copiar";
@@ -1167,8 +1086,6 @@ $("rescateCopiar").onclick = async () => {
     $("rescateCopiar").textContent = "Copiado";
     yaLoTiene();
   } catch (e) {
-    // Sin permiso para el portapapeles, que pasa en bastantes navegadores.
-    // Se selecciona el código para que baste con pulsar copiar a mano.
     const rango = document.createRange();
     rango.selectNodeContents($("textoRescate"));
     getSelection().removeAllRanges();
@@ -1197,7 +1114,6 @@ $("rescateBajar").onclick = () => {
 
 $("rescateHecho").onclick = () => $("dialogoRescate").close();
 
-// Antes pulsar tu nombre sacaba un confirm() de salir y no había más.
 function abrirYo() {
   $("yoNombre").textContent = usuarioDentro;
   $("formBorrar").hidden = true;
@@ -1205,8 +1121,6 @@ function abrirYo() {
   $("dialogoYo").showModal();
 }
 $("yoCerrar").onclick = () => $("dialogoYo").close();
-// Todo lo que hay de ti, en un archivo que se puede leer y llevarse a otro
-// sitio. La política de privacidad lo prometía y solo se podía mirar.
 $("yoBajar").onclick = async () => {
   const boton = $("yoBajar");
   boton.disabled = true;
@@ -1253,7 +1167,6 @@ $("borrarNo").onclick = () => {
   $("formBorrar").hidden = true;
   $("filaBorrar").hidden = false;
 };
-// Escribir el nombre y no un "sí": un sí se pulsa sin leer.
 $("borrarNombre").oninput = () => {
   $("borrarSi").disabled = $("borrarNombre").value.trim().toLowerCase() !== usuarioDentro.toLowerCase();
 };
@@ -1274,9 +1187,6 @@ $("formBorrar").onsubmit = async (ev) => {
   $("borrarSi").textContent = "Borrar para siempre";
 };
 
-// Al entrar se juntan los dos progresos en vez de que uno pise al otro.
-// Alguien puede haber avanzado en este navegador sin cuenta y tener otro
-// tanto guardado en ella, y perder cualquiera de los dos es perder trabajo.
 async function sincronizar() {
   try {
     const alla = await cuenta.bajarProgreso();
@@ -1291,11 +1201,9 @@ async function sincronizar() {
   } catch (e) {}
 }
 
-// --- Enganchar todo ------------------------------------------------------
 
 $comprobar.onclick = comprobar;
 
-// Ctrl+Intro para comprobar sin soltar el teclado.
 $programa.addEventListener("keydown", (ev) => {
   if ((ev.ctrlKey || ev.metaKey) && ev.key === "Enter") { ev.preventDefault(); if (!$comprobar.disabled) comprobar(); }
 });
