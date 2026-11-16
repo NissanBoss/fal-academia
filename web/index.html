@@ -621,7 +621,7 @@ function pintarLeccion() {
   pintarPaso($("siguiente"), actual + 1);
   pintarIndice();
   pintarAvance();
-  document.title = l.titulo + " · Academia de Fal";
+  if (location.hash) document.title = l.titulo + " · Academia de Fal";
 }
 
 function ir(i) {
